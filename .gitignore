@@ -20,3 +20,7 @@ agents/
 # General
 .DS_Store
 *.env
+
+# testing
+test_data.py
+
