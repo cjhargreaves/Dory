@@ -1,26 +1,16 @@
 import type { Metadata } from "next";
-import { Inter, JetBrains_Mono } from "next/font/google";
-import Script from "next/script";
 import "./globals.css";
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains-mono",
-});
 
 export const metadata: Metadata = {
   title: "Dory - AI Agent Spend Management",
-  description: "Track every model call, set hard limits, and attribute costs down to the specific agent workflow.",
+  description:
+    "Track every model call, set hard limits, and attribute costs down to the specific agent workflow.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+<<<<<<< HEAD
       <body className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}>
         <Script src="https://cdn.tailwindcss.com" strategy="beforeInteractive" />
         <Script id="tailwind-config" strategy="beforeInteractive">
@@ -52,6 +42,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script src="https://code.iconify.design/iconify-icon/1.0.7/iconify-icon.min.js" />
       </head>
       <body className="antialiased">{children}</body>
+=======
+      <body>{children}</body>
+>>>>>>> f565feb (fixed the frontend bug)
     </html>
   );
 }
