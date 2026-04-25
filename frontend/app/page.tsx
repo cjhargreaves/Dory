@@ -9,13 +9,6 @@ export default function Home() {
             </div>
             <span className="text-xl font-semibold tracking-tight">Dory</span>
           </div>
-<<<<<<< HEAD
-          <div className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-brand-muted hover:text-white transition">Features</a>
-            <a href="/docs" className="text-brand-muted hover:text-white transition">Docs</a>
-            <a href="#pricing" className="text-brand-muted hover:text-white transition">Pricing</a>
-            <a href="#" className="px-4 py-2 bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30 rounded-lg hover:bg-brand-cyan/20 transition font-medium">
-=======
           <div className="hidden items-center space-x-8 md:flex">
             <a href="#features" className="text-brand-muted transition hover:text-white">
               Features
@@ -26,12 +19,8 @@ export default function Home() {
             <a href="#pricing" className="text-brand-muted transition hover:text-white">
               Pricing
             </a>
-            <a
-              href="#"
-              className="rounded-lg border border-brand-cyan/30 bg-brand-cyan/10 px-4 py-2 font-medium text-brand-cyan transition hover:bg-brand-cyan/20"
-            >
->>>>>>> f565feb (fixed the frontend bug)
-              Login
+            <a href="/dashboard" className="px-4 py-2 bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30 rounded-lg hover:bg-brand-cyan/20 transition font-medium">
+              Dashboard
             </a>
           </div>
         </div>
@@ -62,12 +51,6 @@ export default function Home() {
             >
               Start Monitoring Free
             </a>
-<<<<<<< HEAD
-            <a href="/docs" className="w-full sm:w-auto px-8 py-3 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition font-medium">
-              See the Docs
-            </a>
-          </div>
-=======
             <a
               href="#"
               className="w-full rounded-lg border border-white/10 bg-white/5 px-8 py-3 font-medium transition hover:bg-white/10 sm:w-auto"
@@ -86,7 +69,6 @@ export default function Home() {
               <div className="text-2xl font-bold tracking-tight">NeuralInc</div>
             </div>
           </div>
->>>>>>> f565feb (fixed the frontend bug)
         </div>
       </section>
 
