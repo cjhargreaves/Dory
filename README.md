@@ -4,32 +4,74 @@ AI agent spend management. Track, monitor, and control costs across agentic AI A
 
 ## Stack
 
-- **Frontend:** Next.js + Tailwind CSS
-- **Backend:** FastAPI + MongoDB
-- **Auth:** Auth0
+- **Frontend:** Next.js + Tailwind CSS, deployed on Vercel
+- **Backend:** FastAPI + MongoDB, deployed on Railway
+- **Auth:** Clerk
 - **SDK:** Python (`dory-sdk`)
 - **MCP Server:** Windsurf/Cascade integration
 
 ## Getting started
 
-### Backend
+### Backend (local)
 
 ```bash
 cd backend
-cp .env.example .env
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 ```
 
-### Frontend
+Create `backend/.env`:
+
+```
+MONGODB_URL=your-mongodb-atlas-url
+MONGODB_DB=dory
+DORY_API_KEY=your-api-key
+```
+
+### Frontend (local)
 
 ```bash
 cd frontend
-cp .env.local.example .env.local
 npm install
 npm run dev
+```
+
+Create `frontend/.env.local`:
+
+```
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=your-clerk-publishable-key
+CLERK_SECRET_KEY=your-clerk-secret-key
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+NEXT_PUBLIC_API_URL=http://localhost:8000
+NEXT_PUBLIC_API_KEY=your-api-key
+```
+
+## Deployment
+
+### Frontend → Vercel
+
+Add these environment variables in Vercel → Settings → Environment Variables:
+
+```
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
+NEXT_PUBLIC_API_URL=https://your-railway-url.up.railway.app
+NEXT_PUBLIC_API_KEY=
+```
+
+### Backend → Railway
+
+Set root directory to `backend`. Add these environment variables in Railway:
+
+```
+MONGODB_URL=
+MONGODB_DB=dory
+DORY_API_KEY=
 ```
 
 ---
@@ -49,7 +91,7 @@ import dory
 client = dory.wrap(
     anthropic.Anthropic(api_key="sk-ant-..."),
     agent="my-agent",
-    api_url="http://localhost:8000",
+    api_url="https://your-railway-url.up.railway.app",
     api_key="your-dory-key",
 )
 
@@ -63,12 +105,10 @@ response = client.messages.create(
 
 Every call automatically tracks token usage and cost in the background without blocking your agent.
 
-To test the full pipeline:
+To seed test data:
 
 ```bash
-source backend/venv/bin/activate
-pip install -e sdk/
-python3 test.py
+python3 test_data.py
 ```
 
 ---
@@ -93,7 +133,7 @@ Add to your Windsurf MCP config (`~/.codeium/windsurf/mcp_config.json`):
       "command": "/Users/cjh/Work/Dory/backend/venv/bin/python3",
       "args": ["/Users/cjh/Work/Dory/mcp-server/server.py"],
       "env": {
-        "DORY_API_URL": "http://localhost:8000",
+        "DORY_API_URL": "https://your-railway-url.up.railway.app",
         "DORY_API_KEY": "your-dory-key"
       }
     }
@@ -111,16 +151,18 @@ Restart Windsurf. Cascade will have access to three tools:
 
 ## What's done
 
-- **Backend skeleton** - FastAPI app with CORS, health check, config
-- **MongoDB validation** - backend startup now pings Atlas and creates the spend indexes it needs, instead of only creating a lazy client
+- **Backend** - FastAPI app with CORS, health check, MongoDB Atlas connection
 - **SDK** - `dory.wrap()` wraps the Anthropic client, captures token usage, calculates cost per model, and fires spend events to the backend in a background thread
-- **Spend ingestion** - `POST /api/events` receives SDK events and persists them to MongoDB (auth via API key)
+- **Spend ingestion** - `POST /api/events` receives SDK events and persists them to MongoDB
 - **Spend read endpoints** - `GET /api/spend/summary` and `GET /api/spend/events` for aggregated and raw data
 - **MCP server** - Windsurf/Cascade integration exposing log_spend, get_summary, and check_budget tools
+- **Auth** - Clerk authentication, dashboard protected behind login
+- **Frontend** - Landing page + dashboard showing real spend data per agent
+- **Deployment** - Frontend on Vercel, backend on Railway
 
 ## What's next
 
-- **Auth0** - user login connected to the database so each user only sees their own agents and spend data
-- **Landing page** - finalise design and copy
-- **Pitch deck** - slides for YC application
-- **Event coverage** - expand SDK to cover streaming responses, tool use, and multi-turn conversations
+- Per-user data isolation so each user only sees their own agents and spend
+- Budget alerts and hard caps per agent
+- Streaming response support in the SDK
+- Expand event coverage to tool use and multi-turn conversations
