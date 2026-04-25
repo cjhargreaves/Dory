@@ -1,4 +1,26 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-dark: #0f172a;
+  --color-brand-panel: #1e293b;
+  --color-brand-cyan: #06b6d4;
+  --color-brand-text: #f8fafc;
+  --color-brand-muted: #94a3b8;
+  --font-sans: "Inter", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", "Consolas", monospace;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
 body {
-  background: #0F172A;
-  color: #F8FAFC;
+  min-height: 100%;
+  background: var(--color-brand-dark);
+  color: var(--color-brand-text);
+}
+
+body {
+  font-family: var(--font-sans);
 }

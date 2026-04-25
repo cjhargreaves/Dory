@@ -1,90 +1,116 @@
 export default function Home() {
   return (
     <div className="bg-brand-dark text-brand-text font-sans antialiased">
-
-      {/* Nav */}
-      <nav className="absolute w-full z-50 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
+      <nav className="absolute z-50 w-full px-6 py-4">
+        <div className="mx-auto flex max-w-7xl items-center justify-between">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-brand-cyan rounded-lg flex items-center justify-center">
-              <span className="text-brand-dark font-bold text-lg">D</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-cyan">
+              <span className="text-lg font-bold text-brand-dark">D</span>
             </div>
-            <span className="font-semibold text-xl tracking-tight">Dory</span>
+            <span className="text-xl font-semibold tracking-tight">Dory</span>
           </div>
-          <div className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-brand-muted hover:text-white transition">Features</a>
-            <a href="/docs" className="text-brand-muted hover:text-white transition">Docs</a>
-            <a href="#pricing" className="text-brand-muted hover:text-white transition">Pricing</a>
-            <a href="#" className="px-4 py-2 bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30 rounded-lg hover:bg-brand-cyan/20 transition font-medium">
-              Login
+          <div className="hidden items-center space-x-8 md:flex">
+            <a href="#features" className="text-brand-muted transition hover:text-white">
+              Features
+            </a>
+            <a href="#docs" className="text-brand-muted transition hover:text-white">
+              Docs
+            </a>
+            <a href="#pricing" className="text-brand-muted transition hover:text-white">
+              Pricing
+            </a>
+            <a href="/dashboard" className="px-4 py-2 bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30 rounded-lg hover:bg-brand-cyan/20 transition font-medium">
+              Dashboard
             </a>
           </div>
         </div>
       </nav>
 
-      {/* Hero */}
-      <section className="relative min-h-screen flex items-center justify-center pt-20 pb-10 overflow-hidden">
+      <section className="relative flex min-h-screen items-center justify-center overflow-hidden pb-10 pt-20">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-brand-cyan/10 via-brand-dark to-brand-dark" />
-        <div className="relative z-10 text-center px-6 max-w-4xl mx-auto">
-          <div className="inline-flex items-center px-3 py-1 rounded-full bg-brand-panel border border-white/10 mb-8">
-            <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse" />
+        <div className="relative z-10 mx-auto max-w-4xl px-6 text-center">
+          <div className="mb-8 inline-flex items-center rounded-full border border-white/10 bg-brand-panel px-3 py-1">
+            <span className="mr-2 h-2 w-2 rounded-full bg-green-500 animate-pulse" />
             <span className="text-sm text-brand-muted">Now in Beta for Early Adopters</span>
           </div>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6 leading-tight">
-            Stop burning cash on<br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan to-cyan-400">
+          <h1 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-6xl lg:text-7xl">
+            Stop burning cash on
+            <br />
+            <span className="bg-gradient-to-r from-brand-cyan to-cyan-400 bg-clip-text text-transparent">
               invisible AI agents.
             </span>
           </h1>
-          <p className="text-lg md:text-xl text-brand-muted max-w-2xl mx-auto mb-10">
-            The observability layer for autonomous spend. Track every model call, set hard limits, and attribute costs down to the specific agent workflow.
+          <p className="mx-auto mb-10 max-w-2xl text-lg text-brand-muted md:text-xl">
+            The observability layer for autonomous spend. Track every model call, set hard limits,
+            and attribute costs down to the specific agent workflow.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a href="#" className="w-full sm:w-auto px-8 py-3 bg-brand-cyan text-brand-dark font-semibold rounded-lg hover:bg-cyan-300 transition shadow-lg shadow-cyan-500/20">
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <a
+              href="#"
+              className="w-full rounded-lg bg-brand-cyan px-8 py-3 font-semibold text-brand-dark shadow-lg shadow-cyan-500/20 transition hover:bg-cyan-300 sm:w-auto"
+            >
               Start Monitoring Free
             </a>
-            <a href="/docs" className="w-full sm:w-auto px-8 py-3 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition font-medium">
-              See the Docs
+            <a
+              href="#"
+              className="w-full rounded-lg border border-white/10 bg-white/5 px-8 py-3 font-medium transition hover:bg-white/10 sm:w-auto"
+            >
+              Book a Demo
             </a>
+          </div>
+          <div className="mt-16 w-full border-t border-white/5 pt-10">
+            <p className="mb-6 text-xs uppercase tracking-wider text-brand-muted">
+              Trusted by teams building autonomous systems
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 opacity-50">
+              <div className="text-2xl font-bold tracking-tight">TechCorp</div>
+              <div className="text-2xl font-bold tracking-tight">Autonoma</div>
+              <div className="text-2xl font-bold tracking-tight">ScaleAI</div>
+              <div className="text-2xl font-bold tracking-tight">NeuralInc</div>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Dashboard Preview */}
-      <section className="relative py-20 px-6">
-        <div className="max-w-5xl mx-auto">
-          <div className="bg-brand-panel rounded-xl border border-white/10 shadow-2xl overflow-hidden">
-            <div className="px-4 py-3 bg-brand-dark/50 border-b border-white/10 flex items-center space-x-2">
-              <div className="w-3 h-3 rounded-full bg-red-500/80" />
-              <div className="w-3 h-3 rounded-full bg-yellow-500/80" />
-              <div className="w-3 h-3 rounded-full bg-green-500/80" />
-              <span className="ml-4 text-xs text-brand-muted font-mono">dashboard.dory.io</span>
+      <section className="relative px-6 py-20">
+        <div className="mx-auto max-w-5xl">
+          <div className="overflow-hidden rounded-xl border border-white/10 bg-brand-panel shadow-2xl">
+            <div className="flex items-center space-x-2 border-b border-white/10 bg-brand-dark/50 px-4 py-3">
+              <div className="h-3 w-3 rounded-full bg-red-500/80" />
+              <div className="h-3 w-3 rounded-full bg-yellow-500/80" />
+              <div className="h-3 w-3 rounded-full bg-green-500/80" />
+              <span className="ml-4 font-mono text-xs text-brand-muted">dashboard.dory.io</span>
             </div>
-            <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-brand-dark/50 p-4 rounded-lg border border-white/5">
-                <p className="text-brand-muted text-xs font-mono mb-1">TOTAL AGENT BURN</p>
+            <div className="grid grid-cols-1 gap-6 p-6 md:grid-cols-3 md:p-8">
+              <div className="rounded-lg border border-white/5 bg-brand-dark/50 p-4">
+                <p className="mb-1 font-mono text-xs text-brand-muted">TOTAL AGENT BURN</p>
                 <p className="text-3xl font-bold text-white">$1,240.89</p>
-                <div className="flex items-center mt-2 text-xs text-green-400">
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                <div className="mt-2 flex items-center text-xs text-green-400">
+                  <svg className="mr-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
+                    />
                   </svg>
                   12% lower than last week
                 </div>
               </div>
-              <div className="bg-brand-dark/50 p-4 rounded-lg border border-white/5">
-                <p className="text-brand-muted text-xs font-mono mb-1">ACTIVE AGENTS</p>
+              <div className="rounded-lg border border-white/5 bg-brand-dark/50 p-4">
+                <p className="mb-1 font-mono text-xs text-brand-muted">ACTIVE AGENTS</p>
                 <p className="text-3xl font-bold text-white">47</p>
-                <div className="w-full bg-brand-panel rounded-full h-1.5 mt-4">
-                  <div className="bg-brand-cyan h-1.5 rounded-full" style={{ width: "75%" }} />
+                <div className="mt-4 h-1.5 w-full rounded-full bg-brand-panel">
+                  <div className="h-1.5 rounded-full bg-brand-cyan" style={{ width: "75%" }} />
                 </div>
               </div>
-              <div className="bg-brand-dark/50 p-4 rounded-lg border border-white/5">
-                <p className="text-brand-muted text-xs font-mono mb-1">BLOCKED OVERAGES</p>
+              <div className="rounded-lg border border-white/5 bg-brand-dark/50 p-4">
+                <p className="mb-1 font-mono text-xs text-brand-muted">BLOCKED OVERAGES</p>
                 <p className="text-3xl font-bold text-white">12</p>
-                <p className="text-xs text-brand-muted mt-2">Last triggered: 2 mins ago</p>
+                <p className="mt-2 text-xs text-brand-muted">Last triggered: 2 mins ago</p>
               </div>
             </div>
-            <div className="bg-brand-dark/30 p-6 border-t border-white/5 font-mono text-sm overflow-x-auto">
+            <div className="overflow-x-auto border-t border-white/5 bg-brand-dark/30 p-6 font-mono text-sm">
               <pre>{`import Dory from 'dory-sdk';
 
 // Track agent execution and cost in one line
@@ -99,65 +125,96 @@ await agent.run('process-pdfs', {
         </div>
       </section>
 
-      {/* Features */}
-      <section id="features" className="py-20 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Infrastructure for the Agent Economy</h2>
-            <p className="text-brand-muted text-lg max-w-2xl mx-auto">
-              You wouldn't run a team without a CFO. Don't run agents without Dory.
+      <section id="features" className="px-6 py-20">
+        <div className="mx-auto max-w-7xl">
+          <div className="mb-16 text-center">
+            <h2 className="mb-4 text-3xl font-bold md:text-4xl">
+              Infrastructure for the Agent Economy
+            </h2>
+            <p className="mx-auto max-w-2xl text-lg text-brand-muted">
+              You wouldn&apos;t run a team without a CFO. Don&apos;t run agents without Dory.
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-brand-panel/50 p-8 rounded-xl border border-white/5 hover:border-brand-cyan/30 transition group">
-              <div className="w-12 h-12 bg-brand-cyan/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-brand-cyan/20 transition">
-                <svg className="w-6 h-6 text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
+            <div className="group rounded-xl border border-white/5 bg-brand-panel/50 p-8 transition hover:border-brand-cyan/30">
+              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-brand-cyan/10 transition group-hover:bg-brand-cyan/20">
+                <svg className="h-6 w-6 text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                  />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold mb-3">Real-Time Attribution</h3>
-              <p className="text-brand-muted">Trace every API call back to the specific agent and workflow. No more mystery line items on your Stripe bill.</p>
+              <h3 className="mb-3 text-xl font-semibold">Real-Time Attribution</h3>
+              <p className="text-brand-muted">
+                Trace every API call back to the specific agent and workflow. No more mystery line
+                items on your Stripe bill.
+              </p>
             </div>
-            <div className="bg-brand-panel/50 p-8 rounded-xl border border-white/5 hover:border-brand-cyan/30 transition group">
-              <div className="w-12 h-12 bg-brand-cyan/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-brand-cyan/20 transition">
-                <svg className="w-6 h-6 text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            <div className="group rounded-xl border border-white/5 bg-brand-panel/50 p-8 transition hover:border-brand-cyan/30">
+              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-brand-cyan/10 transition group-hover:bg-brand-cyan/20">
+                <svg className="h-6 w-6 text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"
+                  />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold mb-3">Programmable Limits</h3>
-              <p className="text-brand-muted">Set hard budget caps per agent. If an infinite loop starts burning cash, we kill the process instantly.</p>
+              <h3 className="mb-3 text-xl font-semibold">Programmable Limits</h3>
+              <p className="text-brand-muted">
+                Set hard budget caps per agent. If an infinite loop starts burning cash, we kill the
+                process instantly.
+              </p>
             </div>
-            <div className="bg-brand-panel/50 p-8 rounded-xl border border-white/5 hover:border-brand-cyan/30 transition group">
-              <div className="w-12 h-12 bg-brand-cyan/10 rounded-lg flex items-center justify-center mb-6 group-hover:bg-brand-cyan/20 transition">
-                <svg className="w-6 h-6 text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+            <div className="group rounded-xl border border-white/5 bg-brand-panel/50 p-8 transition hover:border-brand-cyan/30">
+              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-lg bg-brand-cyan/10 transition group-hover:bg-brand-cyan/20">
+                <svg className="h-6 w-6 text-brand-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold mb-3">One Integration</h3>
-              <p className="text-brand-muted">Works with LangChain, AutoGPT, and custom stacks. Drop in our SDK and get visibility in minutes.</p>
+              <h3 className="mb-3 text-xl font-semibold">One Integration</h3>
+              <p className="text-brand-muted">
+                Works with LangChain, AutoGPT, and custom stacks. Drop in our SDK and get visibility
+                in minutes.
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="border-t border-white/5 py-12 px-6">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
-          <div className="flex items-center space-x-2 mb-4 md:mb-0">
-            <div className="w-6 h-6 bg-brand-cyan rounded flex items-center justify-center">
-              <span className="text-brand-dark font-bold text-xs">D</span>
+      <footer className="border-t border-white/5 px-6 py-12">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between md:flex-row">
+          <div className="mb-4 flex items-center space-x-2 md:mb-0">
+            <div className="flex h-6 w-6 items-center justify-center rounded bg-brand-cyan">
+              <span className="text-xs font-bold text-brand-dark">D</span>
             </div>
             <span className="font-semibold">Dory</span>
           </div>
           <div className="flex space-x-6 text-sm text-brand-muted">
-            <a href="#" className="hover:text-white transition">Privacy</a>
-            <a href="#" className="hover:text-white transition">Terms</a>
-            <a href="#" className="hover:text-white transition">Security</a>
-            <a href="#" className="hover:text-white transition">Contact</a>
+            <a href="#" className="transition hover:text-white">
+              Privacy
+            </a>
+            <a href="#" className="transition hover:text-white">
+              Terms
+            </a>
+            <a href="#" className="transition hover:text-white">
+              Security
+            </a>
+            <a href="#" className="transition hover:text-white">
+              Contact
+            </a>
           </div>
         </div>
       </footer>
-
     </div>
   );
 }

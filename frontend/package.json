@@ -10,7 +10,6 @@
   },
   "dependencies": {
     "@auth0/nextjs-auth0": "^4.19.0",
-    "@types/react-syntax-highlighter": "^15.5.13",
     "next": "16.2.4",
     "react": "19.2.4",
     "react-dom": "19.2.4",
@@ -21,6 +20,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/react-syntax-highlighter": "^15.5.13",
     "eslint": "^9",
     "eslint-config-next": "16.2.4",
     "tailwindcss": "^4",
