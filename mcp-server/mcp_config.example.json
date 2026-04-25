@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "dory": {
+      "command": "/Users/cjh/Work/Dory/backend/venv/bin/python3",
+      "args": ["/Users/.../Work/Dory/mcp-server/server.py"],
+      "env": {
+        "DORY_API_URL": "http://localhost:8000",
+        "DORY_API_KEY": "api_key"
+      }
+    }
+  }
+}
