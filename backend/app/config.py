@@ -4,6 +4,7 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     mongodb_url: str
     mongodb_db: str = "dory"
+    anthropic_api_key: str
 
     auth0_domain: str
     auth0_audience: str

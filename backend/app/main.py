@@ -1,19 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from contextlib import asynccontextmanager
 
-from app.database import connect_db, close_db
-from app.routers import health
+from app.routers import health, events, spend
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    await connect_db()
-    yield
-    await close_db()
-
-
-app = FastAPI(title="Dory API", version="0.1.0", lifespan=lifespan)
+app = FastAPI(title="Dory API", version="0.1.0")
 
 app.add_middleware(
     CORSMiddleware,
@@ -24,3 +14,5 @@ app.add_middleware(
 )
 
 app.include_router(health.router)
+app.include_router(events.router)
+app.include_router(spend.router)
