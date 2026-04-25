@@ -1,4 +1,85 @@
-export default function Home() {
+type SpendAgent = {
+  agent: string;
+  call_count: number;
+  total_cost_usd: number;
+  total_input_tokens: number;
+  total_output_tokens: number;
+  last_seen: string;
+};
+
+type SpendSummary = {
+  total_cost_usd: number;
+  agents: SpendAgent[];
+};
+
+type SpendEvent = {
+  agent: string;
+  model: string;
+  input_tokens: number;
+  output_tokens: number;
+  cost_usd: number;
+  timestamp: string;
+};
+
+async function getDashboardData(): Promise<{
+  summary: SpendSummary | null;
+  events: SpendEvent[];
+  error: string | null;
+}> {
+  const apiUrl = (process.env.DORY_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+  const apiKey = process.env.DORY_API_KEY || process.env.ANTHROPIC_API_KEY;
+
+  if (!apiKey) {
+    return {
+      summary: null,
+      events: [],
+      error: "Set DORY_API_KEY in frontend/.env.local to load live dashboard data.",
+    };
+  }
+
+  try {
+    const headers = { "X-API-Key": apiKey };
+    const [summaryResponse, eventsResponse] = await Promise.all([
+      fetch(`${apiUrl}/api/spend/summary`, { headers, cache: "no-store" }),
+      fetch(`${apiUrl}/api/spend/events`, { headers, cache: "no-store" }),
+    ]);
+
+    if (!summaryResponse.ok) {
+      throw new Error(`Summary request failed with ${summaryResponse.status}`);
+    }
+
+    if (!eventsResponse.ok) {
+      throw new Error(`Events request failed with ${eventsResponse.status}`);
+    }
+
+    const summary = (await summaryResponse.json()) as SpendSummary;
+    const eventsPayload = (await eventsResponse.json()) as { events: SpendEvent[] };
+
+    return {
+      summary,
+      events: eventsPayload.events,
+      error: null,
+    };
+  } catch (error) {
+    return {
+      summary: null,
+      events: [],
+      error: error instanceof Error ? error.message : "Unable to load dashboard data.",
+    };
+  }
+}
+
+const currencyFormatter = new Intl.NumberFormat("en-US", {
+  style: "currency",
+  currency: "USD",
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 6,
+});
+
+export default async function Home() {
+  const { summary, events, error } = await getDashboardData();
+  const latestEvent = events[0];
+
   return (
     <div className="bg-brand-dark text-brand-text font-sans antialiased">
 
@@ -72,37 +153,67 @@ export default function Home() {
             <div className="p-6 md:p-8 grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="bg-brand-dark/50 p-4 rounded-lg border border-white/5">
                 <p className="text-brand-muted text-xs font-mono mb-1">TOTAL AGENT BURN</p>
-                <p className="text-3xl font-bold text-white">$1,240.89</p>
-                <div className="flex items-center mt-2 text-xs text-green-400">
-                  <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-                  </svg>
-                  12% lower than last week
-                </div>
+                <p className="text-3xl font-bold text-white">
+                  {currencyFormatter.format(summary?.total_cost_usd ?? 0)}
+                </p>
+                <p className="mt-2 text-xs text-brand-muted">
+                  Last 30 days across all tracked agent calls
+                </p>
               </div>
               <div className="bg-brand-dark/50 p-4 rounded-lg border border-white/5">
                 <p className="text-brand-muted text-xs font-mono mb-1">ACTIVE AGENTS</p>
-                <p className="text-3xl font-bold text-white">47</p>
+                <p className="text-3xl font-bold text-white">{summary?.agents.length ?? 0}</p>
                 <div className="w-full bg-brand-panel rounded-full h-1.5 mt-4">
-                  <div className="bg-brand-cyan h-1.5 rounded-full" style={{ width: "75%" }} />
+                  <div
+                    className="bg-brand-cyan h-1.5 rounded-full"
+                    style={{ width: `${Math.min((summary?.agents.length ?? 0) * 12, 100)}%` }}
+                  />
                 </div>
               </div>
               <div className="bg-brand-dark/50 p-4 rounded-lg border border-white/5">
-                <p className="text-brand-muted text-xs font-mono mb-1">BLOCKED OVERAGES</p>
-                <p className="text-3xl font-bold text-white">12</p>
-                <p className="text-xs text-brand-muted mt-2">Last triggered: 2 mins ago</p>
+                <p className="text-brand-muted text-xs font-mono mb-1">LATEST EVENT</p>
+                <p className="text-xl font-bold text-white">{latestEvent?.agent ?? "No events yet"}</p>
+                <p className="text-xs text-brand-muted mt-2">
+                  {latestEvent
+                    ? `${latestEvent.model} • ${currencyFormatter.format(latestEvent.cost_usd)}`
+                    : "Send one tracked SDK event to create the dory database."}
+                </p>
               </div>
             </div>
-            <div className="bg-brand-dark/30 p-6 border-t border-white/5 font-mono text-sm overflow-x-auto">
-              <pre>{`import Dory from 'dory-sdk';
-
-// Track agent execution and cost in one line
-const agent = new Dory.Agent('invoice-processor');
-
-await agent.run('process-pdfs', {
-  budget: 5.00, // Kill switch at $5.00
-  model: 'gpt-4o'
-});`}</pre>
+            <div className="bg-brand-dark/30 p-6 border-t border-white/5">
+              <div className="flex items-center justify-between gap-4 mb-4">
+                <p className="text-sm font-mono text-brand-muted">Recent tracked events</p>
+                {error ? <p className="text-xs text-amber-300">{error}</p> : null}
+              </div>
+              <div className="space-y-3">
+                {events.length > 0 ? (
+                  events.slice(0, 5).map((event) => (
+                    <div
+                      key={`${event.agent}-${event.timestamp}-${event.model}`}
+                      className="grid grid-cols-[1.2fr_1.4fr_0.8fr] gap-4 rounded-lg border border-white/5 bg-brand-dark/40 px-4 py-3 text-sm"
+                    >
+                      <div>
+                        <p className="font-medium text-white">{event.agent}</p>
+                        <p className="text-xs text-brand-muted">{new Date(event.timestamp).toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-white">{event.model}</p>
+                        <p className="text-xs text-brand-muted">
+                          {event.input_tokens} in • {event.output_tokens} out
+                        </p>
+                      </div>
+                      <div className="text-right font-mono text-brand-cyan">
+                        {currencyFormatter.format(event.cost_usd)}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="rounded-lg border border-dashed border-white/10 px-4 py-6 text-sm text-brand-muted">
+                    No spend events have been stored yet. Once the SDK successfully posts to the backend,
+                    this panel will populate from MongoDB.
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -114,7 +225,7 @@ await agent.run('process-pdfs', {
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-4">Infrastructure for the Agent Economy</h2>
             <p className="text-brand-muted text-lg max-w-2xl mx-auto">
-              You wouldn't run a team without a CFO. Don't run agents without Dory.
+              You wouldn&apos;t run a team without a CFO. Don&apos;t run agents without Dory.
             </p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

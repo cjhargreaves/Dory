@@ -37,14 +37,14 @@ python3 test.py
 ## What's done
 
 - **Backend skeleton** - FastAPI app with CORS, health check, config
+- **MongoDB validation** - backend startup now pings Atlas and creates the spend indexes it needs, instead of only creating a lazy client
 - **SDK** - `dory.wrap()` wraps the Anthropic client, captures token usage, calculates cost per model, and fires spend events to the backend in a background thread
-- **Spend ingestion** - `POST /api/events` receives SDK events and logs cost (auth via API key)
+- **Spend ingestion** - `POST /api/events` receives SDK events and persists them to MongoDB (auth via API key)
 - **Spend read endpoints** - `GET /api/spend/summary` and `GET /api/spend/events` for aggregated and raw data
+- **Frontend dashboard preview** - the homepage can now fetch live summary and event data from the backend when `DORY_API_URL` and `DORY_API_KEY` are configured
 
 ## What's next
 
-- **MongoDB (Atlas)** - connect the database so spend events are persisted instead of just logged
-- **Live dashboard** - wire the frontend to the backend APIs to show real cost breakdowns per agent, replacing the placeholder numbers
 - **Auth0** - user login connected to the database so each user only sees their own agents and spend data
 - **Landing page** - finalise design and copy
 - **Pitch deck** - slides for YC application

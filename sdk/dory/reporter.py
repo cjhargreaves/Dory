@@ -1,4 +1,5 @@
 import json
+import sys
 import threading
 import urllib.request
 import urllib.error
@@ -24,6 +25,21 @@ class Reporter:
                     "X-API-Key": self.api_key,
                 },
             )
-            urllib.request.urlopen(req, timeout=5)
-        except Exception:
-            pass
+            with urllib.request.urlopen(req, timeout=5):
+                return
+        except urllib.error.HTTPError as exc:
+            body = exc.read().decode("utf-8", errors="ignore")
+            print(
+                f"[dory] failed to report spend event: HTTP {exc.code} {body or exc.reason}",
+                file=sys.stderr,
+            )
+        except urllib.error.URLError as exc:
+            print(
+                f"[dory] failed to report spend event: {exc.reason}",
+                file=sys.stderr,
+            )
+        except Exception as exc:
+            print(
+                f"[dory] failed to report spend event: {exc}",
+                file=sys.stderr,
+            )

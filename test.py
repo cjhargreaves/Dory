@@ -16,12 +16,13 @@ sys.path.insert(0, "sdk")
 import dory
 
 ANTHROPIC_API_KEY = os.environ["ANTHROPIC_API_KEY"]
+DORY_API_KEY = os.environ.get("DORY_API_KEY", ANTHROPIC_API_KEY)
 
 client = dory.wrap(
     anthropic.Anthropic(api_key=ANTHROPIC_API_KEY),
     agent="test-agent",
     api_url="http://localhost:8000",
-    api_key=ANTHROPIC_API_KEY,
+    api_key=DORY_API_KEY,
 )
 
 print("Making Anthropic call via Dory SDK...")

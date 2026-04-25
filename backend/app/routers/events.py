@@ -3,12 +3,13 @@ from pydantic import BaseModel
 from datetime import datetime, timezone
 
 from app.config import settings
+from app.database import get_db
 
 router = APIRouter()
 
 
 def verify_api_key(x_api_key: str = Header(...)):
-    if x_api_key != settings.anthropic_api_key:
+    if x_api_key != settings.backend_api_key:
         raise HTTPException(status_code=401, detail="Invalid API key")
 
 
@@ -25,9 +26,9 @@ async def ingest_event(event: SpendEvent):
     print(f"[dory] agent={event.agent} model={event.model} "
           f"input={event.input_tokens} output={event.output_tokens} "
           f"cost=${event.cost_usd:.6f}")
-    # db = get_db()
-    # await db.spend_events.insert_one({
-    #     **event.model_dump(),
-    #     "timestamp": datetime.now(timezone.utc),
-    # })
+    db = get_db()
+    await db.spend_events.insert_one({
+        **event.model_dump(),
+        "timestamp": datetime.now(timezone.utc),
+    })
     return {"ok": True}
