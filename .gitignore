@@ -7,9 +7,11 @@ venv/
 backend/.env
 
 # Node
-frontend/node_modules/
+**/node_modules/
 frontend/.next/
 frontend/.env.local
+backend/package.json
+backend/package-lock.json
 
 # Claude / agents
 .claude/
@@ -18,3 +20,7 @@ agents/
 # General
 .DS_Store
 *.env
+
+# testing
+test_data.py
+

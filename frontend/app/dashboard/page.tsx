@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useUser, useClerk } from '@clerk/nextjs';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY ?? '';
@@ -64,9 +65,11 @@ function StatCard({ label, value, sub }: { label: string; value: string; sub?: s
 }
 
 export default function Dashboard() {
+  const { user } = useUser();
+  const { signOut } = useClerk();
   const [summary, setSummary] = useState<SpendSummary | null>(null);
   const [events, setEvents] = useState<SpendEvent[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function load() {
@@ -116,10 +119,12 @@ export default function Dashboard() {
       <nav className="sticky top-0 z-50 bg-brand-dark/80 backdrop-blur border-b border-white/5 px-6 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-brand-cyan rounded-lg flex items-center justify-center">
-              <span className="text-brand-dark font-bold text-lg">D</span>
-            </div>
-            <span className="font-semibold text-xl tracking-tight">Dory</span>
+            <a href="/" className="flex items-center space-x-2">
+              <div className="w-8 h-8 bg-brand-cyan rounded-lg flex items-center justify-center">
+                <span className="text-brand-dark font-bold text-lg">D</span>
+              </div>
+              <span className="font-semibold text-xl tracking-tight">Dory</span>
+            </a>
             <span className="ml-3 px-2 py-0.5 rounded text-xs bg-brand-panel border border-white/10 text-brand-muted font-mono">
               Dashboard
             </span>
@@ -127,6 +132,10 @@ export default function Dashboard() {
           <div className="flex items-center gap-4">
             <a href="/" className="text-sm text-brand-muted hover:text-white transition">Home</a>
             <a href="/docs" className="text-sm text-brand-muted hover:text-white transition">Docs</a>
+            {user?.primaryEmailAddress?.emailAddress && (
+              <span className="text-sm text-brand-muted">{user.primaryEmailAddress.emailAddress}</span>
+            )}
+            <button onClick={() => signOut({ redirectUrl: '/' })} className="text-sm text-brand-muted hover:text-white transition">Logout</button>
             <button
               onClick={load}
               disabled={loading}

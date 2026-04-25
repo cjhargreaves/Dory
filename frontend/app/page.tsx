@@ -1,27 +1,42 @@
+'use client';
+
+import { useUser } from '@clerk/nextjs';
+
 export default function Home() {
+  const { user } = useUser();
+
   return (
     <div className="bg-brand-dark text-brand-text font-sans antialiased">
       <nav className="absolute z-50 w-full px-6 py-4">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
-          <div className="flex items-center space-x-2">
+          <a href="/" className="flex items-center space-x-2">
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-cyan">
               <span className="text-lg font-bold text-brand-dark">D</span>
             </div>
             <span className="text-xl font-semibold tracking-tight">Dory</span>
-          </div>
+          </a>
           <div className="hidden items-center space-x-8 md:flex">
             <a href="#features" className="text-brand-muted transition hover:text-white">
               Features
             </a>
-            <a href="#docs" className="text-brand-muted transition hover:text-white">
+            <a href="/docs" className="text-brand-muted transition hover:text-white">
               Docs
             </a>
             <a href="#pricing" className="text-brand-muted transition hover:text-white">
               Pricing
             </a>
-            <a href="/dashboard" className="px-4 py-2 bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30 rounded-lg hover:bg-brand-cyan/20 transition font-medium">
-              Dashboard
-            </a>
+            {user ? (
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-brand-muted">Hi, {user.firstName ?? user.primaryEmailAddress?.emailAddress}</span>
+                <a href="/dashboard" className="px-4 py-2 bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30 rounded-lg hover:bg-brand-cyan/20 transition font-medium">
+                  My Dashboard
+                </a>
+              </div>
+            ) : (
+              <a href="/sign-in" className="px-4 py-2 bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30 rounded-lg hover:bg-brand-cyan/20 transition font-medium">
+                Login
+              </a>
+            )}
           </div>
         </div>
       </nav>
@@ -111,15 +126,22 @@ export default function Home() {
               </div>
             </div>
             <div className="overflow-x-auto border-t border-white/5 bg-brand-dark/30 p-6 font-mono text-sm">
-              <pre>{`import Dory from 'dory-sdk';
+              <pre>{`import anthropic
+import dory
 
-// Track agent execution and cost in one line
-const agent = new Dory.Agent('invoice-processor');
+client = dory.wrap(
+    anthropic.Anthropic(),
+    agent="document-pipeline",
+    api_url="https://api.dory.io",
+    api_key="dory_sk_live_...",
+)
 
-await agent.run('process-pdfs', {
-  budget: 5.00, // Kill switch at $5.00
-  model: 'gpt-4o'
-});`}</pre>
+# Every call is tracked automatically
+response = client.messages.create(
+    model="claude-sonnet-4-6",
+    max_tokens=1024,
+    messages=[{"role": "user", "content": prompt}],
+)`}</pre>
             </div>
           </div>
         </div>
