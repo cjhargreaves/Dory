@@ -94,7 +94,7 @@ export default async function Home() {
           </div>
           <div className="hidden md:flex items-center space-x-8">
             <a href="#features" className="text-brand-muted hover:text-white transition">Features</a>
-            <a href="#docs" className="text-brand-muted hover:text-white transition">Docs</a>
+            <a href="/docs" className="text-brand-muted hover:text-white transition">Docs</a>
             <a href="#pricing" className="text-brand-muted hover:text-white transition">Pricing</a>
             <a href="#" className="px-4 py-2 bg-brand-cyan/10 text-brand-cyan border border-brand-cyan/30 rounded-lg hover:bg-brand-cyan/20 transition font-medium">
               Login
@@ -124,18 +124,9 @@ export default async function Home() {
             <a href="#" className="w-full sm:w-auto px-8 py-3 bg-brand-cyan text-brand-dark font-semibold rounded-lg hover:bg-cyan-300 transition shadow-lg shadow-cyan-500/20">
               Start Monitoring Free
             </a>
-            <a href="#" className="w-full sm:w-auto px-8 py-3 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition font-medium">
-              Book a Demo
+            <a href="/docs" className="w-full sm:w-auto px-8 py-3 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition font-medium">
+              See the Docs
             </a>
-          </div>
-          <div className="mt-16 pt-10 border-t border-white/5 w-full">
-            <p className="text-xs uppercase tracking-wider text-brand-muted mb-6">Trusted by teams building autonomous systems</p>
-            <div className="flex flex-wrap justify-center items-center gap-x-12 gap-y-6 opacity-50">
-              <div className="text-2xl font-bold tracking-tight">TechCorp</div>
-              <div className="text-2xl font-bold tracking-tight">Autonoma</div>
-              <div className="text-2xl font-bold tracking-tight">ScaleAI</div>
-              <div className="text-2xl font-bold tracking-tight">NeuralInc</div>
-            </div>
           </div>
         </div>
       </section>
