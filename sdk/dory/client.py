@@ -9,19 +9,24 @@ class TrackedMessages:
         self._reporter = reporter
 
     def create(self, **kwargs):
+        function_name = kwargs.pop("function_name", None)
         response = self._messages.create(**kwargs)
 
         model = kwargs.get("model", "unknown")
         input_tokens = response.usage.input_tokens
         output_tokens = response.usage.output_tokens
 
-        self._reporter.send({
+        event = {
             "agent": self._agent,
             "model": model,
             "input_tokens": input_tokens,
             "output_tokens": output_tokens,
             "cost_usd": get_cost(model, input_tokens, output_tokens),
-        })
+        }
+        if function_name:
+            event["function_name"] = function_name
+
+        self._reporter.send(event)
 
         return response
 

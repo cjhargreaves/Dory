@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useUser, useClerk } from '@clerk/nextjs';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY ?? '';
@@ -15,18 +16,50 @@ interface AgentSummary {
   last_seen: string;
 }
 
+interface ModelSummary {
+  model: string;
+  total_cost_usd: number;
+  total_input_tokens: number;
+  total_output_tokens: number;
+  call_count: number;
+  agent_count: number;
+}
+
+interface FunctionSummary {
+  function_name: string;
+  total_cost_usd: number;
+  total_input_tokens: number;
+  total_output_tokens: number;
+  call_count: number;
+  model_count: number;
+}
+
 interface SpendSummary {
   total_cost_usd: number;
   agents: AgentSummary[];
+  models: ModelSummary[];
+  functions: FunctionSummary[];
 }
 
 interface SpendEvent {
   agent: string;
   model: string;
+  function_name?: string;
   input_tokens: number;
   output_tokens: number;
   cost_usd: number;
   timestamp: string;
+}
+
+interface DetailedBreakdown {
+  agent: string;
+  model: string;
+  function_name?: string;
+  total_cost_usd: number;
+  total_input_tokens: number;
+  total_output_tokens: number;
+  call_count: number;
+  last_seen: string;
 }
 
 function fmt(n: number) {
@@ -69,6 +102,7 @@ export default function Dashboard() {
   const { signOut } = useClerk();
   const [summary, setSummary] = useState<SpendSummary | null>(null);
   const [events, setEvents] = useState<SpendEvent[]>([]);
+  const [details, setDetails] = useState<DetailedBreakdown[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -79,19 +113,23 @@ export default function Dashboard() {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (API_KEY) headers['X-API-Key'] = API_KEY;
 
-      const [sumRes, evtRes] = await Promise.all([
+      const [sumRes, evtRes, detRes] = await Promise.all([
         fetch(`${API_URL}/api/spend/summary`, { headers }),
         fetch(`${API_URL}/api/spend/events`, { headers }),
+        fetch(`${API_URL}/api/spend/detailed`, { headers }),
       ]);
 
       if (!sumRes.ok) throw new Error(`Summary: ${sumRes.status} ${sumRes.statusText}`);
       if (!evtRes.ok) throw new Error(`Events: ${evtRes.status} ${evtRes.statusText}`);
+      if (!detRes.ok) throw new Error(`Details: ${detRes.status} ${detRes.statusText}`);
 
       const sumData: SpendSummary = await sumRes.json();
       const evtData: { events: SpendEvent[] } = await evtRes.json();
+      const detData: { details: DetailedBreakdown[] } = await detRes.json();
 
       setSummary(sumData);
       setEvents(evtData.events);
+      setDetails(detData.details);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to fetch data');
     } finally {
@@ -106,11 +144,27 @@ export default function Dashboard() {
     (s, a) => s + a.total_input_tokens + a.total_output_tokens, 0
   ) ?? 0;
 
-  // Derive unique models from recent events
   const modelCounts = events.reduce<Record<string, number>>((acc, e) => {
     acc[e.model] = (acc[e.model] ?? 0) + 1;
     return acc;
   }, {});
+
+  const COLORS = ['#00D4FF', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#6B7280'];
+
+  const pieData = summary?.models.map((m, index) => ({
+    name: m.model,
+    value: m.total_cost_usd,
+    calls: m.call_count,
+    percentage: summary ? (m.total_cost_usd / summary.total_cost_usd * 100) : 0,
+    color: COLORS[index % COLORS.length],
+  })) || [];
+
+  const functionData = summary?.functions.map((f, index) => ({
+    name: f.function_name,
+    value: f.total_cost_usd,
+    percentage: summary ? (f.total_cost_usd / summary.total_cost_usd * 100) : 0,
+    color: COLORS[(index + 2) % COLORS.length],
+  })) || [];
 
   return (
     <div className="min-h-screen bg-brand-dark text-brand-text font-sans antialiased">
@@ -163,7 +217,7 @@ export default function Dashboard() {
         )}
 
         {/* Stat cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-10">
           <StatCard
             label="TOTAL SPEND (30D)"
             value={summary ? fmtUsd(summary.total_cost_usd) : '—'}
@@ -181,10 +235,67 @@ export default function Dashboard() {
           />
           <StatCard
             label="MODELS IN USE"
-            value={String(Object.keys(modelCounts).length || '—')}
-            sub={Object.keys(modelCounts).slice(0, 2).join(', ') || undefined}
+            value={summary ? String(summary.models.length) : '—'}
+            sub={summary ? `${summary.models.reduce((s, m) => s + m.call_count, 0).toLocaleString()} total calls` : undefined}
+          />
+          <StatCard
+            label="TOP MODEL"
+            value={summary && summary.models.length > 0 ? summary.models[0].model.split('/').pop() || summary.models[0].model : '—'}
+            sub={summary && summary.models.length > 0 ? `${(summary.models[0].total_cost_usd / summary.total_cost_usd * 100).toFixed(1)}% of spend` : undefined}
           />
         </div>
+
+        {/* Model Usage Pie Chart */}
+        <section className="mb-10">
+          <h2 className="text-sm font-mono text-brand-muted tracking-widest mb-4">MODEL USAGE BY COST</h2>
+          <div className="bg-brand-panel rounded-xl border border-white/5 p-6">
+            {loading && !summary ? (
+              <div className="h-80 flex items-center justify-center text-brand-muted text-sm">Loading…</div>
+            ) : !summary || pieData.length === 0 ? (
+              <div className="h-80 flex items-center justify-center text-brand-muted text-sm">No model data yet.</div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 items-center">
+                <div className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={pieData}
+                        cx="50%"
+                        cy="50%"
+                        label={false}
+                        outerRadius={100}
+                        fill="#8884d8"
+                        dataKey="value"
+                      >
+                        {pieData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip
+                        formatter={(value: number, name: string, props: any) => [
+                          `$${value.toFixed(6)} (${props.payload.percentage.toFixed(1)}%)`,
+                          name
+                        ]}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+
+                <div className="space-y-2">
+                  {pieData.map((entry, index) => (
+                    <div key={entry.name} className="flex items-center gap-3">
+                      <span className="h-3.5 w-3.5 rounded-full" style={{ backgroundColor: entry.color }} />
+                      <div>
+                        <p className="text-sm font-medium text-white">{entry.name}</p>
+                        <p className="text-xs text-brand-muted">{entry.percentage.toFixed(1)}% · {fmtUsd(entry.value)} · {entry.calls.toLocaleString()} calls</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
 
         {/* Agent breakdown table */}
         <section className="mb-10">
@@ -218,6 +329,138 @@ export default function Dashboard() {
                       <td className="px-5 py-3.5 text-right text-brand-muted">{a.total_input_tokens.toLocaleString()}</td>
                       <td className="px-5 py-3.5 text-right text-brand-muted">{a.total_output_tokens.toLocaleString()}</td>
                       <td className="px-5 py-3.5 text-right text-brand-muted text-xs">{timeAgo(a.last_seen)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </section>
+
+        {/* Model breakdown table */}
+        <section className="mb-10">
+          <h2 className="text-sm font-mono text-brand-muted tracking-widest mb-4">MODEL BREAKDOWN</h2>
+          <div className="bg-brand-panel rounded-xl border border-white/5 overflow-hidden">
+            {loading && !summary ? (
+              <div className="p-10 text-center text-brand-muted text-sm">Loading…</div>
+            ) : !summary || summary.models.length === 0 ? (
+              <div className="p-10 text-center text-brand-muted text-sm">No model data yet.</div>
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/5 text-brand-muted text-xs font-mono">
+                    <th className="text-left px-5 py-3">MODEL</th>
+                    <th className="text-right px-5 py-3">COST</th>
+                    <th className="text-right px-5 py-3">CALLS</th>
+                    <th className="text-right px-5 py-3">AGENTS</th>
+                    <th className="text-right px-5 py-3">INPUT TOKENS</th>
+                    <th className="text-right px-5 py-3">OUTPUT TOKENS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {summary.models.map((m, i) => (
+                    <tr
+                      key={m.model}
+                      className={`border-b border-white/5 last:border-0 hover:bg-white/2 transition ${i % 2 === 0 ? '' : 'bg-brand-dark/20'}`}
+                    >
+                      <td className="px-5 py-3.5">
+                        <span className={`px-2 py-0.5 rounded text-xs border font-mono ${modelBadge(m.model)}`}>
+                          {m.model}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 text-right text-brand-cyan font-mono">{fmtUsd(m.total_cost_usd)}</td>
+                      <td className="px-5 py-3.5 text-right text-brand-muted">{m.call_count.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-brand-muted">{m.agent_count}</td>
+                      <td className="px-5 py-3.5 text-right text-brand-muted">{m.total_input_tokens.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-brand-muted">{m.total_output_tokens.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </section>
+
+        {/* Function breakdown table */}
+        <section className="mb-10">
+          <h2 className="text-sm font-mono text-brand-muted tracking-widest mb-4">FUNCTION BREAKDOWN</h2>
+          <div className="bg-brand-panel rounded-xl border border-white/5 overflow-hidden">
+            {loading && !summary ? (
+              <div className="p-10 text-center text-brand-muted text-sm">Loading…</div>
+            ) : !summary || summary.functions.length === 0 ? (
+              <div className="p-10 text-center text-brand-muted text-sm">No function-level data yet.</div>
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/5 text-brand-muted text-xs font-mono">
+                    <th className="text-left px-5 py-3">FUNCTION</th>
+                    <th className="text-right px-5 py-3">COST</th>
+                    <th className="text-right px-5 py-3">CALLS</th>
+                    <th className="text-right px-5 py-3">MODELS</th>
+                    <th className="text-right px-5 py-3">INPUT TOKENS</th>
+                    <th className="text-right px-5 py-3">OUTPUT TOKENS</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {summary.functions.map((f, i) => (
+                    <tr
+                      key={f.function_name}
+                      className={`border-b border-white/5 last:border-0 hover:bg-white/2 transition ${i % 2 === 0 ? '' : 'bg-brand-dark/20'}`}
+                    >
+                      <td className="px-5 py-3.5 font-mono font-medium text-brand-text">{f.function_name}</td>
+                      <td className="px-5 py-3.5 text-right text-brand-cyan font-mono">{fmtUsd(f.total_cost_usd)}</td>
+                      <td className="px-5 py-3.5 text-right text-brand-muted">{f.call_count.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-brand-muted">{f.model_count}</td>
+                      <td className="px-5 py-3.5 text-right text-brand-muted">{f.total_input_tokens.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-brand-muted">{f.total_output_tokens.toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+        </section>
+
+        {/* Detailed breakdown table */}
+        <section className="mb-10">
+          <h2 className="text-sm font-mono text-brand-muted tracking-widest mb-4">DETAILED BREAKDOWN (AGENT + MODEL)</h2>
+          <div className="bg-brand-panel rounded-xl border border-white/5 overflow-hidden">
+            {loading && details.length === 0 ? (
+              <div className="p-10 text-center text-brand-muted text-sm">Loading…</div>
+            ) : details.length === 0 ? (
+              <div className="p-10 text-center text-brand-muted text-sm">No detailed data yet.</div>
+            ) : (
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-white/5 text-brand-muted text-xs font-mono">
+                    <th className="text-left px-5 py-3">AGENT</th>
+                    <th className="text-left px-5 py-3">MODEL</th>
+                    <th className="text-left px-5 py-3">FUNCTION</th>
+                    <th className="text-right px-5 py-3">COST</th>
+                    <th className="text-right px-5 py-3">CALLS</th>
+                    <th className="text-right px-5 py-3">INPUT TOKENS</th>
+                    <th className="text-right px-5 py-3">OUTPUT TOKENS</th>
+                    <th className="text-right px-5 py-3">LAST SEEN</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {details.map((d, i) => (
+                    <tr
+                      key={`${d.agent}-${d.model}`}
+                      className={`border-b border-white/5 last:border-0 hover:bg-white/2 transition ${i % 2 === 0 ? '' : 'bg-brand-dark/20'}`}
+                    >
+                      <td className="px-5 py-3.5 font-mono font-medium text-brand-text">{d.agent}</td>
+                      <td className="px-5 py-3.5">
+                        <span className={`px-2 py-0.5 rounded text-xs border font-mono ${modelBadge(d.model)}`}>
+                          {d.model}
+                        </span>
+                      </td>
+                      <td className="px-5 py-3.5 text-right text-brand-muted">{d.function_name || 'unspecified'}</td>
+                      <td className="px-5 py-3.5 text-right text-brand-cyan font-mono">{fmtUsd(d.total_cost_usd)}</td>
+                      <td className="px-5 py-3.5 text-right text-brand-muted">{d.call_count.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-brand-muted">{d.total_input_tokens.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-brand-muted">{d.total_output_tokens.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right text-brand-muted text-xs">{timeAgo(d.last_seen)}</td>
                     </tr>
                   ))}
                 </tbody>
