@@ -12,10 +12,6 @@ class Settings(BaseSettings):
     anthropic_api_key: str | None = None
     dory_api_key: str | None = None
 
-    auth0_domain: str
-    auth0_audience: str
-    auth0_client_id: str
-
     model_config = SettingsConfigDict(
         env_file=Path(__file__).resolve().parent.parent / ".env",
         env_file_encoding="utf-8",
