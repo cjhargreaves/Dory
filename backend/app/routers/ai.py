@@ -4,9 +4,10 @@ from datetime import datetime, timezone
 from typing import Optional
 from urllib import error, request
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
+from app.config import settings
 from app.dependencies import verify_api_key
 
 router = APIRouter()
