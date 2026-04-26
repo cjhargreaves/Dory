@@ -21,6 +21,8 @@ agents/
 .DS_Store
 *.env
 
-# testing
+# testing / local scripts
 test_data.py
+test_functions.py
+demo.py
 
