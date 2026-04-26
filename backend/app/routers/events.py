@@ -1,17 +1,20 @@
-from fastapi import APIRouter, Depends, HTTPException, Header
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timezone
 
-from app.config import settings
 from app.database import get_db
+from app.dependencies import verify_api_key
 
 router = APIRouter()
 
 
-def verify_api_key(x_api_key: str = Header(...)):
-    if x_api_key != settings.backend_api_key:
-        raise HTTPException(status_code=401, detail="Invalid API key")
+class CallSite(BaseModel):
+    file: str
+    line: int
+    function: str
+    snippet: Optional[str] = None
+    snippet_start_line: Optional[int] = None
 
 
 class SpendEvent(BaseModel):
@@ -21,6 +24,7 @@ class SpendEvent(BaseModel):
     output_tokens: int
     cost_usd: float
     function_name: Optional[str] = None
+    call_site: Optional[CallSite] = None
 
 
 @router.post("/api/events", dependencies=[Depends(verify_api_key)])

@@ -4,10 +4,11 @@ from datetime import datetime, timezone
 from typing import Optional
 from urllib import error, request
 
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from app.config import settings
+from app.dependencies import verify_api_key
 
 router = APIRouter()
 DEFAULT_MODEL_FALLBACKS = [
@@ -16,11 +17,6 @@ DEFAULT_MODEL_FALLBACKS = [
     "gemini-2.0-flash",
     "gemini-2.5-flash-lite",
 ]
-
-
-def verify_api_key(x_api_key: str = Header(...)):
-    if x_api_key != settings.backend_api_key:
-        raise HTTPException(status_code=401, detail="Invalid API key")
 
 
 class AgentSummary(BaseModel):
@@ -282,7 +278,7 @@ def _post_generate_content(prompt: str, api_key: str, gemini_model: str) -> dict
         "generationConfig": {
             "temperature": 0.2,
             "topP": 0.9,
-            "maxOutputTokens": 1200,
+            "maxOutputTokens": 16384,
         },
     }
 

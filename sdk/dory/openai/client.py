@@ -1,22 +1,22 @@
-from .source_capture import capture_call_site
-from .pricing import get_cost
-from .reporter import Reporter
+from ..source_capture import capture_call_site
+from ..pricing import get_cost
+from ..reporter import Reporter
 
 
-class TrackedMessages:
-    def __init__(self, messages, agent: str, reporter: Reporter):
-        self._messages = messages
+class TrackedCompletions:
+    def __init__(self, completions, agent: str, reporter: Reporter):
+        self._completions = completions
         self._agent = agent
         self._reporter = reporter
 
     def create(self, **kwargs):
         function_name = kwargs.pop("function_name", None)
         call_site = capture_call_site()
-        response = self._messages.create(**kwargs)
+        response = self._completions.create(**kwargs)
 
         model = kwargs.get("model", "unknown")
-        input_tokens = response.usage.input_tokens
-        output_tokens = response.usage.output_tokens
+        input_tokens = response.usage.prompt_tokens
+        output_tokens = response.usage.completion_tokens
 
         event = {
             "agent": self._agent,
@@ -33,14 +33,21 @@ class TrackedMessages:
             event["call_site"] = call_site
 
         self._reporter.send(event)
-
         return response
 
 
-class DoryClient:
+class TrackedChat:
+    def __init__(self, chat, agent: str, reporter: Reporter):
+        self.completions = TrackedCompletions(chat.completions, agent, reporter)
+
+    def __getattr__(self, name):
+        return getattr(self._chat, name)
+
+
+class DoryOpenAIClient:
     def __init__(self, client, agent: str, reporter: Reporter):
         self._client = client
-        self.messages = TrackedMessages(client.messages, agent, reporter)
+        self.chat = TrackedChat(client.chat, agent, reporter)
 
     def __getattr__(self, name):
         return getattr(self._client, name)

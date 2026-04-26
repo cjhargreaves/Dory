@@ -1,22 +1,23 @@
-from .source_capture import capture_call_site
-from .pricing import get_cost
-from .reporter import Reporter
+from ..source_capture import capture_call_site
+from ..pricing import get_cost
+from ..reporter import Reporter
 
 
-class TrackedMessages:
-    def __init__(self, messages, agent: str, reporter: Reporter):
-        self._messages = messages
+class TrackedModels:
+    def __init__(self, models, agent: str, reporter: Reporter):
+        self._models = models
         self._agent = agent
         self._reporter = reporter
 
-    def create(self, **kwargs):
+    def generate_content(self, **kwargs):
         function_name = kwargs.pop("function_name", None)
         call_site = capture_call_site()
-        response = self._messages.create(**kwargs)
+        response = self._models.generate_content(**kwargs)
 
         model = kwargs.get("model", "unknown")
-        input_tokens = response.usage.input_tokens
-        output_tokens = response.usage.output_tokens
+        usage = response.usage_metadata
+        input_tokens = usage.prompt_token_count or 0
+        output_tokens = usage.candidates_token_count or 0
 
         event = {
             "agent": self._agent,
@@ -33,14 +34,16 @@ class TrackedMessages:
             event["call_site"] = call_site
 
         self._reporter.send(event)
-
         return response
 
+    def __getattr__(self, name):
+        return getattr(self._models, name)
 
-class DoryClient:
+
+class DoryGeminiClient:
     def __init__(self, client, agent: str, reporter: Reporter):
         self._client = client
-        self.messages = TrackedMessages(client.messages, agent, reporter)
+        self.models = TrackedModels(client.models, agent, reporter)
 
     def __getattr__(self, name):
         return getattr(self._client, name)

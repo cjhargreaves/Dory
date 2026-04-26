@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useUser, useClerk } from '@clerk/nextjs';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, AreaChart, Area, XAxis, YAxis, CartesianGrid } from 'recharts';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
 const API_KEY = process.env.NEXT_PUBLIC_API_KEY ?? '';
@@ -32,6 +33,7 @@ interface FunctionSummary {
   total_output_tokens: number;
   call_count: number;
   model_count: number;
+  call_site?: CallSite;
 }
 
 interface SpendSummary {
@@ -39,6 +41,14 @@ interface SpendSummary {
   agents: AgentSummary[];
   models: ModelSummary[];
   functions: FunctionSummary[];
+}
+
+interface CallSite {
+  file: string;
+  line: number;
+  function: string;
+  snippet?: string;
+  snippet_start_line?: number;
 }
 
 interface SpendEvent {
@@ -49,6 +59,7 @@ interface SpendEvent {
   output_tokens: number;
   cost_usd: number;
   timestamp: string;
+  call_site?: CallSite;
 }
 
 interface DetailedBreakdown {
@@ -66,6 +77,17 @@ interface AiSuggestionResponse {
   model: string;
   generated_at: string;
   suggestions: string;
+}
+
+interface Task {
+  task_id: string;
+  name: string;
+  agent: string;
+  started_at: string;
+  ended_at: string | null;
+  duration_seconds: number;
+  cost_usd: number;
+  call_count: number;
 }
 
 function fmt(n: number) {
@@ -93,6 +115,67 @@ function modelBadge(model: string) {
   return 'bg-green-500/15 text-green-300 border-green-500/30';
 }
 
+function SourcePopover({ callSite }: { callSite: CallSite }) {
+  const [rect, setRect] = useState<DOMRect | null>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const lines = callSite.snippet?.split('\n') ?? [];
+  if (lines.at(-1) === '') lines.pop();
+  const callLineIndex = callSite.snippet_start_line != null
+    ? callSite.line - callSite.snippet_start_line
+    : -1;
+
+  const popover = rect && createPortal(
+    <div
+      style={{
+        position: 'fixed',
+        bottom: window.innerHeight - rect.top + 8,
+        right: window.innerWidth - rect.right,
+        zIndex: 9999,
+        width: '24rem',
+      }}
+      className="overflow-hidden rounded-xl border border-white/10 bg-[#0d0d0d] shadow-2xl"
+    >
+      <div className="flex items-center gap-2 border-b border-white/5 px-4 py-2">
+        <span className="font-mono text-xs text-brand-cyan">{callSite.file}:{callSite.line}</span>
+        <span className="text-white/20">·</span>
+        <span className="font-mono text-xs text-brand-muted">{callSite.function}()</span>
+      </div>
+      {lines.length > 0 && (
+        <div className="overflow-x-auto p-3">
+          <pre className="text-xs leading-5">
+            {lines.map((line, i) => (
+              <div
+                key={i}
+                className={`flex gap-3 rounded px-1 ${i === callLineIndex ? 'bg-brand-cyan/10 text-brand-text' : 'text-brand-muted'}`}
+              >
+                <span className="w-7 shrink-0 select-none text-right opacity-30">
+                  {(callSite.snippet_start_line ?? 1) + i}
+                </span>
+                <span className="whitespace-pre">{line}</span>
+              </div>
+            ))}
+          </pre>
+        </div>
+      )}
+    </div>,
+    document.body
+  );
+
+  return (
+    <>
+      <button
+        ref={buttonRef}
+        onMouseEnter={() => setRect(buttonRef.current?.getBoundingClientRect() ?? null)}
+        onMouseLeave={() => setRect(null)}
+        className="rounded border border-white/10 px-1.5 py-0.5 font-mono text-xs text-brand-muted transition hover:border-brand-cyan/30 hover:text-brand-cyan"
+      >
+        {'</>'}
+      </button>
+      {popover}
+    </>
+  );
+}
+
 function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
   return (
     <div className="bg-brand-dark/50 p-5 rounded-xl border border-white/5">
@@ -112,6 +195,8 @@ export default function Dashboard() {
   const [details, setDetails] = useState<DetailedBreakdown[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [live, setLive] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState<AiSuggestionResponse | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
@@ -124,6 +209,7 @@ export default function Dashboard() {
     setSummary(null);
     setEvents([]);
     setDetails([]);
+    setTasks([]);
   }
 
   async function load() {
@@ -133,10 +219,11 @@ export default function Dashboard() {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (API_KEY) headers['X-API-Key'] = API_KEY;
 
-      const [sumRes, evtRes, detRes] = await Promise.all([
+      const [sumRes, evtRes, detRes, tasksRes] = await Promise.all([
         fetch(`${API_URL}/api/spend/summary`, { headers }),
         fetch(`${API_URL}/api/spend/events`, { headers }),
         fetch(`${API_URL}/api/spend/detailed`, { headers }),
+        fetch(`${API_URL}/api/tasks`, { headers }),
       ]);
 
       if (!sumRes.ok) throw new Error(`Summary: ${sumRes.status} ${sumRes.statusText}`);
@@ -146,10 +233,12 @@ export default function Dashboard() {
       const sumData: SpendSummary = await sumRes.json();
       const evtData: { events: SpendEvent[] } = await evtRes.json();
       const detData: { details: DetailedBreakdown[] } = await detRes.json();
+      const tasksData: { tasks: Task[] } = tasksRes.ok ? await tasksRes.json() : { tasks: [] };
 
       setSummary(sumData);
       setEvents(evtData.events);
       setDetails(detData.details);
+      setTasks(tasksData.tasks);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to fetch data');
     } finally {
@@ -182,7 +271,16 @@ export default function Dashboard() {
     }
   }
 
-  useEffect(() => { setMounted(true); load(); }, []);
+  useEffect(() => {
+    setMounted(true);
+    load();
+
+    const es = new EventSource(`${API_URL}/api/spend/stream`);
+    es.onopen = () => setLive(true);
+    es.onerror = () => setLive(false);
+    es.onmessage = (e) => { if (e.data === 'update') load(); };
+    return () => es.close();
+  }, []);
 
   const totalCalls = summary?.agents.reduce((s, a) => s + a.call_count, 0) ?? 0;
   const totalTokens = summary?.agents.reduce(
@@ -196,20 +294,24 @@ export default function Dashboard() {
 
   const COLORS = ['#00D4FF', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#6B7280'];
 
-  const pieData = summary?.models.map((m, index) => ({
-    name: m.model,
-    value: m.total_cost_usd,
-    calls: m.call_count,
-    percentage: summary ? (m.total_cost_usd / summary.total_cost_usd * 100) : 0,
+  const pieData = summary?.agents.map((a, index) => ({
+    name: a.agent,
+    value: a.total_cost_usd,
+    calls: a.call_count,
+    percentage: summary.total_cost_usd > 0 ? (a.total_cost_usd / summary.total_cost_usd) * 100 : 0,
     color: COLORS[index % COLORS.length],
-  })) || [];
+  })) ?? [];
 
-  const functionData = summary?.functions.map((f, index) => ({
-    name: f.function_name,
-    value: f.total_cost_usd,
-    percentage: summary ? (f.total_cost_usd / summary.total_cost_usd * 100) : 0,
-    color: COLORS[(index + 2) % COLORS.length],
-  })) || [];
+  const timeSeriesData = (() => {
+    const byDay: Record<string, number> = {};
+    events.forEach(e => {
+      const day = e.timestamp.slice(0, 10);
+      byDay[day] = (byDay[day] ?? 0) + e.cost_usd;
+    });
+    return Object.entries(byDay)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([date, cost]) => ({ date: date.slice(5), cost: Math.round(cost * 1000000) / 1000000 }));
+  })();
 
   return (
     <div className="min-h-screen bg-brand-dark text-brand-text font-sans antialiased">
@@ -233,6 +335,10 @@ export default function Dashboard() {
               <span className="text-sm text-brand-muted">{user.primaryEmailAddress.emailAddress}</span>
             )}
             <button onClick={() => signOut({ redirectUrl: '/' })} className="text-sm text-brand-muted hover:text-white transition">Logout</button>
+            <div className="flex items-center gap-2 px-3 py-1.5 text-xs bg-brand-panel border border-white/10 rounded-lg font-mono">
+              <span className={`w-2 h-2 rounded-full ${live ? 'bg-green-400 animate-pulse' : 'bg-white/20'}`} />
+              <span className={live ? 'text-green-400' : 'text-brand-muted'}>{live ? 'live' : 'offline'}</span>
+            </div>
             <button
               onClick={load}
               disabled={loading}
@@ -340,55 +446,80 @@ export default function Dashboard() {
 
         {summary && summary.agents.length > 0 && (<>
 
-        {/* Model Usage Pie Chart */}
+        {/* Charts */}
         <section className="mb-10">
-          <h2 className="text-sm font-mono text-brand-muted tracking-widest mb-4">MODEL USAGE BY COST</h2>
-          <div className="bg-brand-panel rounded-xl border border-white/5 p-6">
-            {loading && !summary ? (
-              <div className="h-80 flex items-center justify-center text-brand-muted text-sm">Loading…</div>
-            ) : !summary || pieData.length === 0 ? (
-              <div className="h-80 flex items-center justify-center text-brand-muted text-sm">No model data yet.</div>
-            ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-6 items-center">
-                <div className="h-80">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            {/* Agent usage pie */}
+            <div className="bg-brand-panel rounded-xl border border-white/5 p-6">
+              <h2 className="text-sm font-mono text-brand-muted tracking-widest mb-4">AGENT USAGE BY COST</h2>
+              {loading && !summary ? (
+                <div className="h-64 flex items-center justify-center text-brand-muted text-sm">Loading…</div>
+              ) : pieData.length === 0 ? (
+                <div className="h-64 flex items-center justify-center text-brand-muted text-sm">No data yet.</div>
+              ) : (
+                <div className="flex gap-6 items-center">
+                  <div className="h-64 w-64 shrink-0">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie data={pieData} cx="50%" cy="50%" outerRadius={90} dataKey="value" label={false}>
+                          {pieData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Pie>
+                        <Tooltip
+                          contentStyle={{ background: '#111', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', fontSize: '12px' }}
+                          formatter={(value, name, props) => [`${fmtUsd(Number(value))} (${props.payload.percentage.toFixed(1)}%)`, name]}
+                        />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <div className="space-y-2.5 min-w-0">
+                    {pieData.map(entry => (
+                      <div key={entry.name} className="flex items-start gap-2.5">
+                        <span className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: entry.color }} />
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-white">{entry.name}</p>
+                          <p className="text-xs text-brand-muted">{entry.percentage.toFixed(1)}% · {fmtUsd(entry.value)} · {entry.calls.toLocaleString()} calls</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Spend over time */}
+            <div className="bg-brand-panel rounded-xl border border-white/5 p-6">
+              <h2 className="text-sm font-mono text-brand-muted tracking-widest mb-4">SPEND OVER TIME</h2>
+              {loading && events.length === 0 ? (
+                <div className="h-64 flex items-center justify-center text-brand-muted text-sm">Loading…</div>
+              ) : timeSeriesData.length === 0 ? (
+                <div className="h-64 flex items-center justify-center text-brand-muted text-sm">No data yet.</div>
+              ) : (
+                <div className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        label={false}
-                        outerRadius={100}
-                        fill="#8884d8"
-                        dataKey="value"
-                      >
-                        {pieData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
+                    <AreaChart data={timeSeriesData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                      <defs>
+                        <linearGradient id="costGradient" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#00D4FF" stopOpacity={0.15} />
+                          <stop offset="95%" stopColor="#00D4FF" stopOpacity={0} />
+                        </linearGradient>
+                      </defs>
+                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                      <XAxis dataKey="date" tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={v => `$${v}`} width={48} />
                       <Tooltip
-                        formatter={(value, name, props) => [
-                          `$${Number(value).toFixed(6)} (${props.payload.percentage.toFixed(1)}%)`,
-                          name
-                        ]}
+                        contentStyle={{ background: '#111', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', fontSize: '12px' }}
+                        formatter={(value) => [fmtUsd(Number(value)), 'Spend']}
                       />
-                    </PieChart>
+                      <Area type="monotone" dataKey="cost" stroke="#00D4FF" strokeWidth={2} fill="url(#costGradient)" dot={false} />
+                    </AreaChart>
                   </ResponsiveContainer>
                 </div>
+              )}
+            </div>
 
-                <div className="space-y-2">
-                  {pieData.map((entry, index) => (
-                    <div key={entry.name} className="flex items-center gap-3">
-                      <span className="h-3.5 w-3.5 rounded-full" style={{ backgroundColor: entry.color }} />
-                      <div>
-                        <p className="text-sm font-medium text-white">{entry.name}</p>
-                        <p className="text-xs text-brand-muted">{entry.percentage.toFixed(1)}% · {fmtUsd(entry.value)} · {entry.calls.toLocaleString()} calls</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
         </section>
 
@@ -476,6 +607,47 @@ export default function Dashboard() {
           </div>
         </section>
 
+        {/* Tasks */}
+        {tasks.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-sm font-mono text-brand-muted tracking-widest mb-4">TASKS</h2>
+            <div className="bg-brand-panel rounded-xl border border-white/5 overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-brand-dark/50 border-b border-white/5">
+                  <tr>
+                    <th className="px-4 py-3 text-brand-muted font-mono text-xs uppercase tracking-wider text-left">Task</th>
+                    <th className="px-4 py-3 text-brand-muted font-mono text-xs uppercase tracking-wider text-left">Agent</th>
+                    <th className="px-4 py-3 text-brand-muted font-mono text-xs uppercase tracking-wider text-left">Started</th>
+                    <th className="px-4 py-3 text-brand-muted font-mono text-xs uppercase tracking-wider text-right">Duration</th>
+                    <th className="px-4 py-3 text-brand-muted font-mono text-xs uppercase tracking-wider text-right">Calls</th>
+                    <th className="px-4 py-3 text-brand-muted font-mono text-xs uppercase tracking-wider text-right">Cost</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tasks.map((t) => {
+                    const active = !t.ended_at;
+                    const dur = t.duration_seconds;
+                    const durStr = dur >= 60 ? `${Math.floor(dur / 60)}m ${dur % 60}s` : `${dur}s`;
+                    return (
+                      <tr key={t.task_id} className="border-b border-white/5 last:border-0">
+                        <td className="px-4 py-3 font-medium text-brand-text flex items-center gap-2">
+                          {active && <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shrink-0" />}
+                          {t.name}
+                        </td>
+                        <td className="px-4 py-3 font-mono text-xs text-brand-cyan">{t.agent}</td>
+                        <td className="px-4 py-3 text-brand-muted text-xs">{timeAgo(t.started_at)}</td>
+                        <td className="px-4 py-3 text-brand-muted text-xs text-right">{active ? <span className="text-green-400">running</span> : durStr}</td>
+                        <td className="px-4 py-3 text-brand-muted text-right">{t.call_count}</td>
+                        <td className="px-4 py-3 font-mono text-xs text-brand-text text-right">{fmtUsd(t.cost_usd)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
+
         {/* Function breakdown table */}
         <section className="mb-10">
           <h2 className="text-sm font-mono text-brand-muted tracking-widest mb-4">FUNCTION BREAKDOWN</h2>
@@ -494,6 +666,7 @@ export default function Dashboard() {
                     <th className="text-right px-5 py-3">MODELS</th>
                     <th className="text-right px-5 py-3">INPUT TOKENS</th>
                     <th className="text-right px-5 py-3">OUTPUT TOKENS</th>
+                    <th className="text-right px-5 py-3">CODE SNIPPET</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -508,6 +681,9 @@ export default function Dashboard() {
                       <td className="px-5 py-3.5 text-right text-brand-muted">{f.model_count}</td>
                       <td className="px-5 py-3.5 text-right text-brand-muted">{f.total_input_tokens.toLocaleString()}</td>
                       <td className="px-5 py-3.5 text-right text-brand-muted">{f.total_output_tokens.toLocaleString()}</td>
+                      <td className="px-5 py-3.5 text-right">
+                        {f.call_site && <SourcePopover callSite={f.call_site} />}
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -516,53 +692,6 @@ export default function Dashboard() {
           </div>
         </section>
 
-        {/* Detailed breakdown table */}
-        <section className="mb-10">
-          <h2 className="text-sm font-mono text-brand-muted tracking-widest mb-4">DETAILED BREAKDOWN (AGENT + MODEL)</h2>
-          <div className="bg-brand-panel rounded-xl border border-white/5 overflow-hidden">
-            {loading && details.length === 0 ? (
-              <div className="p-10 text-center text-brand-muted text-sm">Loading…</div>
-            ) : details.length === 0 ? (
-              <div className="p-10 text-center text-brand-muted text-sm">No detailed data yet.</div>
-            ) : (
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-white/5 text-brand-muted text-xs font-mono">
-                    <th className="text-left px-5 py-3">AGENT</th>
-                    <th className="text-left px-5 py-3">MODEL</th>
-                    <th className="text-left px-5 py-3">FUNCTION</th>
-                    <th className="text-right px-5 py-3">COST</th>
-                    <th className="text-right px-5 py-3">CALLS</th>
-                    <th className="text-right px-5 py-3">INPUT TOKENS</th>
-                    <th className="text-right px-5 py-3">OUTPUT TOKENS</th>
-                    <th className="text-right px-5 py-3">LAST SEEN</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {details.map((d, i) => (
-                    <tr
-                      key={`${d.agent}-${d.model}`}
-                      className={`border-b border-white/5 last:border-0 hover:bg-white/2 transition ${i % 2 === 0 ? '' : 'bg-brand-dark/20'}`}
-                    >
-                      <td className="px-5 py-3.5 font-mono font-medium text-brand-text">{d.agent}</td>
-                      <td className="px-5 py-3.5">
-                        <span className={`px-2 py-0.5 rounded text-xs border font-mono ${modelBadge(d.model)}`}>
-                          {d.model}
-                        </span>
-                      </td>
-                      <td className="px-5 py-3.5 text-right text-brand-muted">{d.function_name || 'unspecified'}</td>
-                      <td className="px-5 py-3.5 text-right text-brand-cyan font-mono">{fmtUsd(d.total_cost_usd)}</td>
-                      <td className="px-5 py-3.5 text-right text-brand-muted">{d.call_count.toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right text-brand-muted">{d.total_input_tokens.toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right text-brand-muted">{d.total_output_tokens.toLocaleString()}</td>
-                      <td className="px-5 py-3.5 text-right text-brand-muted text-xs">{timeAgo(d.last_seen)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </section>
 
         {/* Recent events */}
         <section>
@@ -578,6 +707,7 @@ export default function Dashboard() {
                   <tr className="border-b border-white/5 text-brand-muted text-xs font-mono">
                     <th className="text-left px-5 py-3">AGENT</th>
                     <th className="text-left px-5 py-3">MODEL</th>
+                    <th className="text-left px-5 py-3">FUNCTION</th>
                     <th className="text-right px-5 py-3">COST</th>
                     <th className="text-right px-5 py-3">INPUT</th>
                     <th className="text-right px-5 py-3">OUTPUT</th>
@@ -595,6 +725,16 @@ export default function Dashboard() {
                         <span className={`px-2 py-0.5 rounded text-xs border font-mono ${modelBadge(e.model)}`}>
                           {e.model}
                         </span>
+                      </td>
+                      <td className="px-5 py-3">
+                        <div className="flex items-center gap-2">
+                          {(e.call_site?.function || e.function_name) && (
+                            <span className="font-mono text-xs text-brand-muted">
+                              {e.call_site?.function ?? e.function_name}
+                            </span>
+                          )}
+                          {e.call_site && <SourcePopover callSite={e.call_site} />}
+                        </div>
                       </td>
                       <td className="px-5 py-3 text-right font-mono text-brand-cyan">{fmtUsd(e.cost_usd)}</td>
                       <td className="px-5 py-3 text-right text-brand-muted">{fmt(e.input_tokens)}</td>

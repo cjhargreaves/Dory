@@ -11,7 +11,7 @@ declare global {
   }
 }
 
-type PageId = "quickstart" | "installation" | "anthropic" | "mcp-overview" | "mcp-setup";
+type PageId = "quickstart" | "installation" | "anthropic" | "openai" | "gemini" | "mcp-overview" | "mcp-setup";
 
 const NAV = [
   {
@@ -25,6 +25,8 @@ const NAV = [
     group: "Model Providers",
     items: [
       { id: "anthropic" as PageId, label: "Anthropic", icon: "lucide:message-square" },
+      { id: "openai" as PageId, label: "OpenAI", icon: "lucide:sparkles" },
+      { id: "gemini" as PageId, label: "Gemini", icon: "lucide:atom" },
     ],
   },
   {
@@ -196,7 +198,7 @@ client = dory.wrap(
     api_key="your-dory-key",
 )
 
-# Use exactly like the normal Anthropic client — nothing else changes
+# Use exactly like the normal Anthropic client, nothing else changes
 response = client.messages.create(
     model="claude-haiku-4-5-20251001",
     max_tokens=100,
@@ -334,7 +336,138 @@ print(response.content[0].text)`} />
                   </table>
                 </div>
 
-                <PageNav prev={{ id: "installation", label: "Installation" }} next={{ id: "mcp-overview", label: "MCP Overview" }} onNavigate={navigate} />
+                <PageNav prev={{ id: "installation", label: "Installation" }} next={{ id: "openai", label: "OpenAI" }} onNavigate={navigate} />
+              </div>
+            )}
+
+            {/* OpenAI */}
+            {page === "openai" && (
+              <div>
+                <div className="mb-6"><Badge label="MODEL PROVIDERS" /></div>
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">OpenAI</h1>
+                <p className="text-lg text-brand-muted mb-10 max-w-2xl">Wrap the OpenAI client with <code className="text-brand-cyan font-mono text-base">dory.wrap()</code> to automatically track every GPT model call.</p>
+
+                <h2 className="text-xl font-semibold mb-4">Install</h2>
+                <CodeBlock filename="Terminal" code="pip install dory-sdk openai" />
+
+                <h2 className="text-xl font-semibold mt-10 mb-4">Basic usage</h2>
+                <CodeBlock filename="agent.py" code={`import openai
+import dory
+
+client = dory.wrap(
+    openai.OpenAI(api_key="sk-..."),
+    agent="my-agent",       # name shown in the dashboard
+    api_url="http://localhost:8000",
+    api_key="your-dory-key",
+)
+
+response = client.chat.completions.create(
+    model="gpt-4o-mini",
+    messages=[{"role": "user", "content": "Summarise this document"}],
+)
+print(response.choices[0].message.content)`} />
+
+                <h2 className="text-xl font-semibold mt-10 mb-4">How it works</h2>
+                <p className="text-brand-muted mb-4">
+                  <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">dory.wrap()</code> detects the OpenAI client automatically and returns a <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">DoryOpenAIClient</code> that is a drop-in replacement. After each <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">chat.completions.create()</code> call it reads <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">response.usage.prompt_tokens</code> and <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">completion_tokens</code>, calculates cost, and fires the event to your backend in a background thread.
+                </p>
+
+                <h2 className="text-xl font-semibold mt-10 mb-4">Supported models</h2>
+                <div className="bg-brand-panel rounded-lg border border-white/5 overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead className="bg-brand-dark/50">
+                      <tr className="border-b border-white/5">
+                        <th className="px-4 py-3 text-brand-muted font-mono text-xs uppercase tracking-wider text-left">Model</th>
+                        <th className="px-4 py-3 text-brand-muted font-mono text-xs uppercase tracking-wider text-left">Input / MTok</th>
+                        <th className="px-4 py-3 text-brand-muted font-mono text-xs uppercase tracking-wider text-left">Output / MTok</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        ["gpt-4o", "$2.50", "$10.00"],
+                        ["gpt-4o-mini", "$0.15", "$0.60"],
+                        ["gpt-4-turbo", "$10.00", "$30.00"],
+                        ["gpt-4", "$30.00", "$60.00"],
+                        ["gpt-3.5-turbo", "$0.50", "$1.50"],
+                        ["o1", "$15.00", "$60.00"],
+                        ["o1-mini", "$3.00", "$12.00"],
+                        ["o3-mini", "$1.10", "$4.40"],
+                      ].map(([model, input, output]) => (
+                        <tr key={model} className="border-b border-white/5 last:border-0">
+                          <td className="px-4 py-3 font-mono text-xs text-brand-cyan">{model}</td>
+                          <td className="px-4 py-3 text-brand-muted">{input}</td>
+                          <td className="px-4 py-3 text-brand-muted">{output}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <PageNav prev={{ id: "anthropic", label: "Anthropic" }} next={{ id: "gemini", label: "Gemini" }} onNavigate={navigate} />
+              </div>
+            )}
+
+            {/* Gemini */}
+            {page === "gemini" && (
+              <div>
+                <div className="mb-6"><Badge label="MODEL PROVIDERS" /></div>
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Gemini</h1>
+                <p className="text-lg text-brand-muted mb-10 max-w-2xl">Wrap the Google GenAI client with <code className="text-brand-cyan font-mono text-base">dory.wrap()</code> to automatically track every Gemini model call.</p>
+
+                <h2 className="text-xl font-semibold mb-4">Install</h2>
+                <CodeBlock filename="Terminal" code="pip install dory-sdk google-genai" />
+
+                <h2 className="text-xl font-semibold mt-10 mb-4">Basic usage</h2>
+                <CodeBlock filename="agent.py" code={`import google.genai
+import dory
+
+client = dory.wrap(
+    google.genai.Client(api_key="AIza..."),
+    agent="my-agent",       # name shown in the dashboard
+    api_url="http://localhost:8000",
+    api_key="your-dory-key",
+)
+
+response = client.models.generate_content(
+    model="gemini-2.5-flash",
+    contents="Summarise this document",
+)
+print(response.text)`} />
+
+                <h2 className="text-xl font-semibold mt-10 mb-4">How it works</h2>
+                <p className="text-brand-muted mb-4">
+                  <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">dory.wrap()</code> detects the Google GenAI client automatically and returns a <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">DoryGeminiClient</code> that is a drop-in replacement. After each <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">models.generate_content()</code> call it reads <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">response.usage_metadata</code>, calculates cost, and fires the event to your backend in a background thread.
+                </p>
+
+                <h2 className="text-xl font-semibold mt-10 mb-4">Supported models</h2>
+                <div className="bg-brand-panel rounded-lg border border-white/5 overflow-hidden">
+                  <table className="w-full text-sm">
+                    <thead className="bg-brand-dark/50">
+                      <tr className="border-b border-white/5">
+                        <th className="px-4 py-3 text-brand-muted font-mono text-xs uppercase tracking-wider text-left">Model</th>
+                        <th className="px-4 py-3 text-brand-muted font-mono text-xs uppercase tracking-wider text-left">Input / MTok</th>
+                        <th className="px-4 py-3 text-brand-muted font-mono text-xs uppercase tracking-wider text-left">Output / MTok</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        ["gemini-2.5-pro", "$1.25", "$10.00"],
+                        ["gemini-2.5-flash", "$0.15", "$0.60"],
+                        ["gemini-2.0-flash", "$0.10", "$0.40"],
+                        ["gemini-1.5-pro", "$1.25", "$5.00"],
+                        ["gemini-1.5-flash", "$0.075", "$0.30"],
+                      ].map(([model, input, output]) => (
+                        <tr key={model} className="border-b border-white/5 last:border-0">
+                          <td className="px-4 py-3 font-mono text-xs text-brand-cyan">{model}</td>
+                          <td className="px-4 py-3 text-brand-muted">{input}</td>
+                          <td className="px-4 py-3 text-brand-muted">{output}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                <PageNav prev={{ id: "openai", label: "OpenAI" }} next={{ id: "mcp-overview", label: "MCP Overview" }} onNavigate={navigate} />
               </div>
             )}
 
@@ -343,13 +476,13 @@ print(response.content[0].text)`} />
               <div>
                 <div className="mb-6"><Badge label="MCP INTEGRATION" /></div>
                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">MCP Overview</h1>
-                <p className="text-lg text-brand-muted mb-10 max-w-2xl">The Dory MCP server connects to Windsurf's Cascade agent, giving it budget awareness tools it can call mid-task.</p>
+                <p className="text-lg text-brand-muted mb-10 max-w-2xl">The Dory MCP server gives any MCP-compatible coding agent real-time spend visibility and budget awareness, callable mid-task alongside the agent's own tools.</p>
 
                 <h2 className="text-xl font-semibold mb-4">How it works</h2>
-                <p className="text-brand-muted mb-6">When Windsurf starts, it reads your MCP config and launches the Dory server as a subprocess. Cascade can then call Dory tools alongside its built-in ones. The server speaks MCP over stdio and forwards requests to your Dory backend over HTTP.</p>
+                <p className="text-brand-muted mb-6">When an MCP-compatible agent starts, it reads your MCP config and launches the Dory server as a subprocess. The agent can then call Dory tools alongside its built-in ones. The server speaks MCP over stdio and forwards requests to your Dory backend over HTTP.</p>
 
                 <div className="bg-brand-panel rounded-lg border border-white/5 p-5 font-mono text-xs text-brand-muted mb-8">
-                  <span className="text-brand-cyan">Cascade</span> calls tool
+                  <span className="text-brand-cyan">Agent</span> calls tool
                   {" → "}
                   <span className="text-brand-cyan">MCP server</span> (stdio)
                   {" → "}
@@ -369,9 +502,11 @@ print(response.content[0].text)`} />
                     </thead>
                     <tbody>
                       {[
-                        ["log_spend", "Log a spend event for a given agent and model call"],
-                        ["get_summary", "Get total spend and per-agent breakdown for the last 30 days"],
-                        ["check_budget", "Check how much a specific agent has spent this period"],
+                        ["session_spend", "Show spend for the current session (last N hours) broken down by agent, with most expensive calls and their source locations"],
+                        ["budget_remaining", "Check how much budget an agent has left against a configured limit. Returns current spend, budget, and status"],
+                        ["top_expensive_calls", "Return the most expensive individual API calls with exact source file and line number"],
+                        ["start_task", "Mark the start of a named task. All LLM spend until end_task is grouped under that task and shown on the dashboard"],
+                        ["end_task", "Close the active task and return a summary: total cost, call count, and duration"],
                       ].map(([tool, desc]) => (
                         <tr key={tool} className="border-b border-white/5 last:border-0">
                           <td className="px-4 py-3 font-mono text-xs text-brand-cyan">{tool}</td>
@@ -382,7 +517,7 @@ print(response.content[0].text)`} />
                   </table>
                 </div>
 
-                <PageNav prev={{ id: "anthropic", label: "Anthropic" }} next={{ id: "mcp-setup", label: "Windsurf Setup" }} onNavigate={navigate} />
+                <PageNav prev={{ id: "gemini", label: "Gemini" }} next={{ id: "mcp-setup", label: "Windsurf Setup" }} onNavigate={navigate} />
               </div>
             )}
 
@@ -407,26 +542,28 @@ pip install -e mcp-server/`} />
       "args": ["/path/to/Dory/mcp-server/server.py"],
       "env": {
         "DORY_API_URL": "http://localhost:8000",
-        "DORY_API_KEY": "your-anthropic-api-key"
+        "DORY_API_KEY": "your-dory-key",
+        "DORY_BUDGET": "10.00",
+        "DORY_BUDGET_MY_AGENT": "5.00"
       }
     }
   }
 }`} />
                     <div className="border-l-2 border-brand-cyan bg-brand-cyan/5 rounded-r-lg p-4">
-                      <p className="text-sm text-brand-text"><code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">DORY_API_KEY</code> should match the <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">ANTHROPIC_API_KEY</code> in your <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">backend/.env</code>. Use the full path to your venv Python so the <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">mcp</code> package is found.</p>
+                      <p className="text-sm text-brand-text"><code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">DORY_API_KEY</code> should match the <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">DORY_API_KEY</code> set in your <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">backend/.env</code>. Use the full path to your venv Python so the <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">mcp</code> package is found.</p>
                     </div>
                   </Step>
                   <Step n={3} title="Restart Windsurf">
                     <p className="text-brand-muted">Quit and reopen Windsurf. The Dory tools will appear in Cascade's tool list. You can verify by asking Cascade:</p>
                     <div className="bg-brand-panel rounded-lg border border-white/5 p-4 mt-3 font-mono text-sm text-brand-muted italic">
-                      "Use the get_summary tool to show me current agent spend."
+                      "Use start_task to begin tracking this feature, then end_task when you are done."
                     </div>
                   </Step>
                   <Step n={4} title="Make sure your backend is running">
                     <CodeBlock filename="Terminal" code={`cd backend
 source venv/bin/activate
 uvicorn app.main:app --reload`} />
-                    <p className="text-sm text-brand-muted">The MCP server is just a relay — it requires the Dory backend to be running to do anything.</p>
+                    <p className="text-sm text-brand-muted">The MCP server is just a relay. It requires the Dory backend to be running to do anything.</p>
                   </Step>
                 </div>
 
