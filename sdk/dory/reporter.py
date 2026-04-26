@@ -11,8 +11,7 @@ class Reporter:
         self.api_key = api_key
 
     def send(self, event: dict):
-        # fire and forget — never block the agent
-        threading.Thread(target=self._post, args=(event,), daemon=True).start()
+        threading.Thread(target=self._post, args=(event,), daemon=False).start()
 
     def _post(self, event: dict):
         try:

@@ -61,6 +61,7 @@ async def spend_summary():
             "total_output_tokens": {"$sum": "$output_tokens"},
             "call_count": {"$sum": 1},
             "models": {"$addToSet": "$model"},
+            "call_site": {"$last": "$call_site"},
         }},
         {"$sort": {"total_cost_usd": -1}},
     ]
@@ -70,6 +71,8 @@ async def spend_summary():
         f["function_name"] = f.pop("_id")["function_name"]
         f["model_count"] = len(f["models"])
         del f["models"]
+        if not f.get("call_site"):
+            f.pop("call_site", None)
 
     total = sum(a["total_cost_usd"] for a in agents)
 
