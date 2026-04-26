@@ -49,32 +49,6 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 NEXT_PUBLIC_API_KEY=your-api-key
 ```
 
-## Deployment
-
-### Frontend → Vercel
-
-Add these environment variables in Vercel → Settings → Environment Variables:
-
-```
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
-CLERK_SECRET_KEY=
-NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
-NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/dashboard
-NEXT_PUBLIC_API_URL=https://your-railway-url.up.railway.app
-NEXT_PUBLIC_API_KEY=
-```
-
-### Backend → Railway
-
-Set root directory to `backend`. Add these environment variables in Railway:
-
-```
-MONGODB_URL=
-MONGODB_DB=dory
-DORY_API_KEY=
-```
-
----
 
 ## SDK usage
 

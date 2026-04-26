@@ -120,9 +120,7 @@ export default function Docs() {
               <iconify-icon icon="lucide:menu" width="20" class="text-brand-muted" />
             </button>
             <a href="/" className="flex items-center space-x-2">
-              <div className="w-7 h-7 bg-brand-cyan rounded-md flex items-center justify-center">
-                <span className="text-brand-dark font-bold text-sm">D</span>
-              </div>
+              <img src="/icon.png" alt="Dory" className="h-10 w-10 object-contain" />
               <span className="font-semibold text-lg tracking-tight">Dory</span>
               <span className="hidden sm:inline text-xs font-medium text-brand-muted bg-brand-panel border border-white/10 rounded px-2 py-0.5 ml-1">Docs</span>
             </a>

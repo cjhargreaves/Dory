@@ -237,30 +237,32 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-10">
           <StatCard
             label="TOTAL SPEND (30D)"
-            value={summary ? fmtUsd(summary.total_cost_usd) : '—'}
+            value={summary ? fmtUsd(summary.total_cost_usd) : '$0.00'}
             sub={loading ? 'Loading…' : undefined}
           />
           <StatCard
             label="ACTIVE AGENTS"
-            value={summary ? String(summary.agents.length) : '—'}
+            value={summary ? String(summary.agents.length) : '0'}
             sub={summary ? `${totalCalls.toLocaleString()} total calls` : undefined}
           />
           <StatCard
             label="TOTAL TOKENS"
-            value={summary ? totalTokens.toLocaleString() : '—'}
+            value={summary ? totalTokens.toLocaleString() : '0'}
             sub="input + output"
           />
           <StatCard
             label="MODELS IN USE"
-            value={summary ? String(summary.models.length) : '—'}
+            value={summary ? String(summary.models.length) : '0'}
             sub={summary ? `${summary.models.reduce((s, m) => s + m.call_count, 0).toLocaleString()} total calls` : undefined}
           />
           <StatCard
             label="TOP MODEL"
-            value={summary && summary.models.length > 0 ? summary.models[0].model.split('/').pop() || summary.models[0].model : '—'}
+            value={summary && summary.models.length > 0 ? summary.models[0].model.split('/').pop() || summary.models[0].model : 'none'}
             sub={summary && summary.models.length > 0 ? `${(summary.models[0].total_cost_usd / summary.total_cost_usd * 100).toFixed(1)}% of spend` : undefined}
           />
         </div>
+
+        {summary && summary.agents.length > 0 && <>
 
         {/* Model Usage Pie Chart */}
         <section className="mb-10">
@@ -529,6 +531,8 @@ export default function Dashboard() {
             )}
           </div>
         </section>
+
+        </>}
 
       </main>
     </div>
