@@ -1,15 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Header
+from fastapi import APIRouter, Depends
 from datetime import datetime, timezone, timedelta
 
 from app.database import get_db
-from app.config import settings
+from app.dependencies import verify_api_key
 
 router = APIRouter()
-
-
-def verify_api_key(x_api_key: str = Header(...)):
-    if x_api_key != settings.backend_api_key:
-        raise HTTPException(status_code=401, detail="Invalid API key")
 
 
 @router.get("/api/spend/summary", dependencies=[Depends(verify_api_key)])

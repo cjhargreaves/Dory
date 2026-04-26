@@ -41,6 +41,14 @@ interface SpendSummary {
   functions: FunctionSummary[];
 }
 
+interface CallSite {
+  file: string;
+  line: number;
+  function: string;
+  snippet?: string;
+  snippet_start_line?: number;
+}
+
 interface SpendEvent {
   agent: string;
   model: string;
@@ -49,6 +57,7 @@ interface SpendEvent {
   output_tokens: number;
   cost_usd: number;
   timestamp: string;
+  call_site?: CallSite;
 }
 
 interface DetailedBreakdown {
@@ -91,6 +100,48 @@ function modelBadge(model: string) {
   if (lower.includes('opus')) return 'bg-purple-500/15 text-purple-300 border-purple-500/30';
   if (lower.includes('sonnet')) return 'bg-brand-cyan/15 text-brand-cyan border-brand-cyan/30';
   return 'bg-green-500/15 text-green-300 border-green-500/30';
+}
+
+function SourcePopover({ callSite }: { callSite: CallSite }) {
+  const lines = callSite.snippet?.split('\n') ?? [];
+  if (lines.at(-1) === '') lines.pop();
+  const callLineIndex = callSite.snippet_start_line != null
+    ? callSite.line - callSite.snippet_start_line
+    : -1;
+
+  return (
+    <div className="group relative inline-block">
+      <button className="rounded border border-white/10 px-1.5 py-0.5 font-mono text-xs text-brand-muted transition hover:border-brand-cyan/30 hover:text-brand-cyan">
+        {'</>'}
+      </button>
+      <div className="pointer-events-none absolute bottom-full right-0 z-50 mb-2 w-96 opacity-0 transition-opacity group-hover:opacity-100">
+        <div className="overflow-hidden rounded-xl border border-white/10 bg-[#0d0d0d] shadow-2xl">
+          <div className="flex items-center gap-2 border-b border-white/5 px-4 py-2">
+            <span className="font-mono text-xs text-brand-cyan">{callSite.file}:{callSite.line}</span>
+            <span className="text-white/20">·</span>
+            <span className="font-mono text-xs text-brand-muted">{callSite.function}()</span>
+          </div>
+          {lines.length > 0 && (
+            <div className="overflow-x-auto p-3">
+              <pre className="text-xs leading-5">
+                {lines.map((line, i) => (
+                  <div
+                    key={i}
+                    className={`flex gap-3 rounded px-1 ${i === callLineIndex ? 'bg-brand-cyan/10 text-brand-text' : 'text-brand-muted'}`}
+                  >
+                    <span className="w-7 shrink-0 select-none text-right opacity-30">
+                      {(callSite.snippet_start_line ?? 1) + i}
+                    </span>
+                    <span className="whitespace-pre">{line}</span>
+                  </div>
+                ))}
+              </pre>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function StatCard({ label, value, sub }: { label: string; value: string; sub?: string }) {
@@ -582,6 +633,7 @@ export default function Dashboard() {
                     <th className="text-right px-5 py-3">INPUT</th>
                     <th className="text-right px-5 py-3">OUTPUT</th>
                     <th className="text-right px-5 py-3">WHEN</th>
+                    <th className="px-5 py-3"></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -600,6 +652,9 @@ export default function Dashboard() {
                       <td className="px-5 py-3 text-right text-brand-muted">{fmt(e.input_tokens)}</td>
                       <td className="px-5 py-3 text-right text-brand-muted">{fmt(e.output_tokens)}</td>
                       <td className="px-5 py-3 text-right text-brand-muted text-xs">{timeAgo(e.timestamp)}</td>
+                      <td className="px-5 py-3 text-right">
+                        {e.call_site && <SourcePopover callSite={e.call_site} />}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

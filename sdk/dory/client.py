@@ -1,3 +1,4 @@
+from .source_capture import capture_call_site
 from .pricing import get_cost
 from .reporter import Reporter
 
@@ -10,6 +11,7 @@ class TrackedMessages:
 
     def create(self, **kwargs):
         function_name = kwargs.pop("function_name", None)
+        call_site = capture_call_site()
         response = self._messages.create(**kwargs)
 
         model = kwargs.get("model", "unknown")
@@ -23,8 +25,12 @@ class TrackedMessages:
             "output_tokens": output_tokens,
             "cost_usd": get_cost(model, input_tokens, output_tokens),
         }
+        if not function_name and call_site:
+            function_name = call_site["function"]
         if function_name:
             event["function_name"] = function_name
+        if call_site:
+            event["call_site"] = call_site
 
         self._reporter.send(event)
 

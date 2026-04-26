@@ -93,8 +93,11 @@ async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
                 text=f"{agent}: ${match['total_cost_usd']:.6f} spent, {match['call_count']} calls in the last 30 days",
             )]
 
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", errors="ignore")
+        return [types.TextContent(type="text", text=f"Dory backend error: HTTP {e.code} {body or e.reason}")]
     except urllib.error.URLError as e:
-        return [types.TextContent(type="text", text=f"Dory backend unreachable: {e}")]
+        return [types.TextContent(type="text", text=f"Dory backend unreachable: {e.reason}")]
 
     return [types.TextContent(type="text", text=f"Unknown tool: {name}")]
 
