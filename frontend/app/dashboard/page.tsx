@@ -357,7 +357,7 @@ export default function Dashboard() {
           />
         </div>
 
-        {summary && summary.agents.length > 0 && <>
+        {summary && summary.agents.length > 0 && (<>
 
         {/* Model Usage Pie Chart */}
         <section className="mb-10">
@@ -763,7 +763,7 @@ export default function Dashboard() {
           </div>
         </section>
 
-        </>}
+        </>)}
 
       </main>
     </div>
