@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Header
 from pydantic import BaseModel
+from typing import Optional
 from datetime import datetime, timezone
 
 from app.config import settings
@@ -19,6 +20,7 @@ class SpendEvent(BaseModel):
     input_tokens: int
     output_tokens: int
     cost_usd: float
+    function_name: Optional[str] = None
 
 
 @router.post("/api/events", dependencies=[Depends(verify_api_key)])
@@ -27,8 +29,9 @@ async def ingest_event(event: SpendEvent):
           f"input={event.input_tokens} output={event.output_tokens} "
           f"cost=${event.cost_usd:.6f}")
     db = get_db()
+    event_data = event.model_dump(exclude_none=True)
     await db.spend_events.insert_one({
-        **event.model_dump(),
+        **event_data,
         "timestamp": datetime.now(timezone.utc),
     })
     return {"ok": True}
