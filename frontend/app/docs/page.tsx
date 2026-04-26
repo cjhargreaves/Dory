@@ -505,6 +505,8 @@ print(response.text)`} />
                         ["session_spend", "Show spend for the current session (last N hours) broken down by agent, with most expensive calls and their source locations"],
                         ["budget_remaining", "Check how much budget an agent has left against a configured limit. Returns current spend, budget, and status"],
                         ["top_expensive_calls", "Return the most expensive individual API calls with exact source file and line number"],
+                        ["start_task", "Mark the start of a named task. All LLM spend until end_task is grouped under that task and shown on the dashboard"],
+                        ["end_task", "Close the active task and return a summary: total cost, call count, and duration"],
                       ].map(([tool, desc]) => (
                         <tr key={tool} className="border-b border-white/5 last:border-0">
                           <td className="px-4 py-3 font-mono text-xs text-brand-cyan">{tool}</td>
@@ -554,7 +556,7 @@ pip install -e mcp-server/`} />
                   <Step n={3} title="Restart Windsurf">
                     <p className="text-brand-muted">Quit and reopen Windsurf. The Dory tools will appear in Cascade's tool list. You can verify by asking Cascade:</p>
                     <div className="bg-brand-panel rounded-lg border border-white/5 p-4 mt-3 font-mono text-sm text-brand-muted italic">
-                      "Use the session_spend tool to show me what has been spent in the last 4 hours."
+                      "Use start_task to begin tracking this feature, then end_task when you are done."
                     </div>
                   </Step>
                   <Step n={4} title="Make sure your backend is running">

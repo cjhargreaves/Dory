@@ -9,10 +9,13 @@ from mcp import types
 
 API_URL = os.environ.get("DORY_API_URL", "http://localhost:8000")
 API_KEY = os.environ.get("DORY_API_KEY", "")
+DEFAULT_AGENT = os.environ.get("DORY_AGENT", "cascade")
 
 # Optional per-agent budgets via env: DORY_BUDGET_myagent=5.00
 # or a global fallback: DORY_BUDGET=10.00
 GLOBAL_BUDGET = float(os.environ.get("DORY_BUDGET", "0") or "0")
+
+_active_task: dict | None = None
 
 server = Server("dory")
 
@@ -21,6 +24,17 @@ def api_get(path: str) -> dict:
     req = urllib.request.Request(
         f"{API_URL}{path}",
         headers={"X-API-Key": API_KEY},
+    )
+    return json.loads(urllib.request.urlopen(req, timeout=10).read())
+
+
+def api_post(path: str, body: dict) -> dict:
+    data = json.dumps(body).encode()
+    req = urllib.request.Request(
+        f"{API_URL}{path}",
+        data=data,
+        headers={"X-API-Key": API_KEY, "Content-Type": "application/json"},
+        method="POST",
     )
     return json.loads(urllib.request.urlopen(req, timeout=10).read())
 
@@ -105,6 +119,44 @@ async def list_tools() -> list[types.Tool]:
                 },
             },
         ),
+        types.Tool(
+            name="start_task",
+            description=(
+                "Mark the start of a named task so all LLM spend during it is grouped together. "
+                "Call this before beginning a coding task, then end_task when done to see the total cost. "
+                "Returns a task_id you must pass to end_task."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "Short description of what you're about to do, e.g. 'implement OAuth flow'.",
+                    },
+                    "agent": {
+                        "type": "string",
+                        "description": "Agent name. Defaults to the DORY_AGENT env var.",
+                    },
+                },
+                "required": ["name"],
+            },
+        ),
+        types.Tool(
+            name="end_task",
+            description=(
+                "Mark the end of a task started with start_task. Returns total cost, number of LLM calls, "
+                "and duration so you know exactly what the task cost."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "task_id": {
+                        "type": "string",
+                        "description": "The task_id returned by start_task. Omit to end the most recently started task.",
+                    },
+                },
+            },
+        ),
     ]
 
 
@@ -124,7 +176,7 @@ async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
                 "By agent:",
             ]
             for a in data["agents"]:
-                lines.append(f"  {a['agent']}: {fmt_usd(a['total_cost_usd'])} — {a['call_count']} calls")
+                lines.append(f"  {a['agent']}: {fmt_usd(a['total_cost_usd'])} - {a['call_count']} calls")
 
             if data["top_calls"]:
                 lines += ["", "Most expensive calls:"]
@@ -146,7 +198,7 @@ async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
             if budget == 0:
                 return [types.TextContent(
                     type="text",
-                    text=f"{agent}: {fmt_usd(spent)} spent across {calls} calls (30d). No budget configured — set DORY_BUDGET_{agent.upper()} to enable limits.",
+                    text=f"{agent}: {fmt_usd(spent)} spent across {calls} calls (30d). No budget configured - set DORY_BUDGET_{agent.upper()} to enable limits.",
                 )]
 
             remaining = budget - spent
@@ -160,7 +212,7 @@ async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
 
             return [types.TextContent(
                 type="text",
-                text=f"{agent}: {fmt_usd(spent)} of {fmt_usd(budget)} used ({pct:.1f}%) — {fmt_usd(remaining)} remaining. {status}",
+                text=f"{agent}: {fmt_usd(spent)} of {fmt_usd(budget)} used ({pct:.1f}%) - {fmt_usd(remaining)} remaining. {status}",
             )]
 
         if name == "top_expensive_calls":
@@ -181,6 +233,36 @@ async def call_tool(name: str, arguments: dict) -> list[types.TextContent]:
                 )
 
             return [types.TextContent(type="text", text="\n".join(lines))]
+
+        if name == "start_task":
+            global _active_task
+            task_name = arguments["name"]
+            agent = arguments.get("agent", DEFAULT_AGENT)
+            data = api_post("/api/tasks", {"name": task_name, "agent": agent})
+            _active_task = {"task_id": data["task_id"], "name": task_name}
+            return [types.TextContent(
+                type="text",
+                text=f"Task started: '{task_name}' (id: {data['task_id']}). Call end_task when done.",
+            )]
+
+        if name == "end_task":
+            task_id = arguments.get("task_id") or (_active_task or {}).get("task_id")
+            if not task_id:
+                return [types.TextContent(type="text", text="No active task. Call start_task first.")]
+            data = api_post(f"/api/tasks/{task_id}/end", {})
+            _active_task = None
+            dur = data["duration_seconds"]
+            dur_str = f"{dur // 60}m {dur % 60}s" if dur >= 60 else f"{dur}s"
+            return [types.TextContent(
+                type="text",
+                text=(
+                    f"Task complete: '{data['name']}'\n"
+                    f"  Cost:     {fmt_usd(data['cost_usd'])}\n"
+                    f"  Calls:    {data['call_count']}\n"
+                    f"  Duration: {dur_str}\n"
+                    f"  Agent:    {data['agent']}"
+                ),
+            )]
 
     except urllib.error.HTTPError as e:
         body = e.read().decode("utf-8", errors="ignore")

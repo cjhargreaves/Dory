@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Depends
+import asyncio
+from fastapi import APIRouter, Depends, Request
+from fastapi.responses import StreamingResponse
 from datetime import datetime, timezone, timedelta
 
 from app.database import get_db
@@ -173,3 +175,31 @@ async def session_spend(hours: int = 4):
         "agents": agents,
         "top_calls": top_calls,
     }
+
+
+@router.get("/api/spend/stream")
+async def spend_stream(request: Request):
+    db = get_db()
+
+    async def generate():
+        yield "data: connected\n\n"
+        try:
+            async with db.spend_events.watch(
+                [{"$match": {"operationType": "insert"}}],
+                full_document="updateLookup",
+            ) as stream:
+                async for _ in stream:
+                    if await request.is_disconnected():
+                        break
+                    yield "data: update\n\n"
+        except Exception:
+            # MongoDB without replica set: fall back to heartbeat-only
+            while not await request.is_disconnected():
+                await asyncio.sleep(30)
+                yield "data: ping\n\n"
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )

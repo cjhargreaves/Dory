@@ -79,6 +79,17 @@ interface AiSuggestionResponse {
   suggestions: string;
 }
 
+interface Task {
+  task_id: string;
+  name: string;
+  agent: string;
+  started_at: string;
+  ended_at: string | null;
+  duration_seconds: number;
+  cost_usd: number;
+  call_count: number;
+}
+
 function fmt(n: number) {
   return n.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
 }
@@ -184,6 +195,8 @@ export default function Dashboard() {
   const [details, setDetails] = useState<DetailedBreakdown[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [live, setLive] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState<AiSuggestionResponse | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
@@ -196,6 +209,7 @@ export default function Dashboard() {
     setSummary(null);
     setEvents([]);
     setDetails([]);
+    setTasks([]);
   }
 
   async function load() {
@@ -205,10 +219,11 @@ export default function Dashboard() {
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
       if (API_KEY) headers['X-API-Key'] = API_KEY;
 
-      const [sumRes, evtRes, detRes] = await Promise.all([
+      const [sumRes, evtRes, detRes, tasksRes] = await Promise.all([
         fetch(`${API_URL}/api/spend/summary`, { headers }),
         fetch(`${API_URL}/api/spend/events`, { headers }),
         fetch(`${API_URL}/api/spend/detailed`, { headers }),
+        fetch(`${API_URL}/api/tasks`, { headers }),
       ]);
 
       if (!sumRes.ok) throw new Error(`Summary: ${sumRes.status} ${sumRes.statusText}`);
@@ -218,10 +233,12 @@ export default function Dashboard() {
       const sumData: SpendSummary = await sumRes.json();
       const evtData: { events: SpendEvent[] } = await evtRes.json();
       const detData: { details: DetailedBreakdown[] } = await detRes.json();
+      const tasksData: { tasks: Task[] } = tasksRes.ok ? await tasksRes.json() : { tasks: [] };
 
       setSummary(sumData);
       setEvents(evtData.events);
       setDetails(detData.details);
+      setTasks(tasksData.tasks);
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to fetch data');
     } finally {
@@ -254,7 +271,16 @@ export default function Dashboard() {
     }
   }
 
-  useEffect(() => { setMounted(true); load(); }, []);
+  useEffect(() => {
+    setMounted(true);
+    load();
+
+    const es = new EventSource(`${API_URL}/api/spend/stream`);
+    es.onopen = () => setLive(true);
+    es.onerror = () => setLive(false);
+    es.onmessage = (e) => { if (e.data === 'update') load(); };
+    return () => es.close();
+  }, []);
 
   const totalCalls = summary?.agents.reduce((s, a) => s + a.call_count, 0) ?? 0;
   const totalTokens = summary?.agents.reduce(
@@ -309,6 +335,10 @@ export default function Dashboard() {
               <span className="text-sm text-brand-muted">{user.primaryEmailAddress.emailAddress}</span>
             )}
             <button onClick={() => signOut({ redirectUrl: '/' })} className="text-sm text-brand-muted hover:text-white transition">Logout</button>
+            <div className="flex items-center gap-2 px-3 py-1.5 text-xs bg-brand-panel border border-white/10 rounded-lg font-mono">
+              <span className={`w-2 h-2 rounded-full ${live ? 'bg-green-400 animate-pulse' : 'bg-white/20'}`} />
+              <span className={live ? 'text-green-400' : 'text-brand-muted'}>{live ? 'live' : 'offline'}</span>
+            </div>
             <button
               onClick={load}
               disabled={loading}
@@ -576,6 +606,47 @@ export default function Dashboard() {
             )}
           </div>
         </section>
+
+        {/* Tasks */}
+        {tasks.length > 0 && (
+          <section className="mb-10">
+            <h2 className="text-sm font-mono text-brand-muted tracking-widest mb-4">TASKS</h2>
+            <div className="bg-brand-panel rounded-xl border border-white/5 overflow-hidden">
+              <table className="w-full text-sm">
+                <thead className="bg-brand-dark/50 border-b border-white/5">
+                  <tr>
+                    <th className="px-4 py-3 text-brand-muted font-mono text-xs uppercase tracking-wider text-left">Task</th>
+                    <th className="px-4 py-3 text-brand-muted font-mono text-xs uppercase tracking-wider text-left">Agent</th>
+                    <th className="px-4 py-3 text-brand-muted font-mono text-xs uppercase tracking-wider text-left">Started</th>
+                    <th className="px-4 py-3 text-brand-muted font-mono text-xs uppercase tracking-wider text-right">Duration</th>
+                    <th className="px-4 py-3 text-brand-muted font-mono text-xs uppercase tracking-wider text-right">Calls</th>
+                    <th className="px-4 py-3 text-brand-muted font-mono text-xs uppercase tracking-wider text-right">Cost</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tasks.map((t) => {
+                    const active = !t.ended_at;
+                    const dur = t.duration_seconds;
+                    const durStr = dur >= 60 ? `${Math.floor(dur / 60)}m ${dur % 60}s` : `${dur}s`;
+                    return (
+                      <tr key={t.task_id} className="border-b border-white/5 last:border-0">
+                        <td className="px-4 py-3 font-medium text-brand-text flex items-center gap-2">
+                          {active && <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shrink-0" />}
+                          {t.name}
+                        </td>
+                        <td className="px-4 py-3 font-mono text-xs text-brand-cyan">{t.agent}</td>
+                        <td className="px-4 py-3 text-brand-muted text-xs">{timeAgo(t.started_at)}</td>
+                        <td className="px-4 py-3 text-brand-muted text-xs text-right">{active ? <span className="text-green-400">running</span> : durStr}</td>
+                        <td className="px-4 py-3 text-brand-muted text-right">{t.call_count}</td>
+                        <td className="px-4 py-3 font-mono text-xs text-brand-text text-right">{fmtUsd(t.cost_usd)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        )}
 
         {/* Function breakdown table */}
         <section className="mb-10">
