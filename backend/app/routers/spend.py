@@ -115,6 +115,13 @@ async def spend_detailed():
     return {"details": details}
 
 
+@router.delete("/api/spend/all", dependencies=[Depends(verify_api_key)])
+async def delete_all_events():
+    db = get_db()
+    result = await db.spend_events.delete_many({})
+    return {"deleted": result.deleted_count}
+
+
 @router.get("/api/spend/events", dependencies=[Depends(verify_api_key)])
 async def recent_events():
     db = get_db()

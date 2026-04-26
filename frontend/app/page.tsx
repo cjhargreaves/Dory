@@ -10,9 +10,7 @@ export default function Home() {
       <nav className="absolute z-50 w-full px-6 py-4">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <a href="/" className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-brand-cyan">
-              <span className="text-lg font-bold text-brand-dark">D</span>
-            </div>
+            <img src="/icon.png" alt="Dory" className="h-16 w-16 object-contain" />
             <span className="text-xl font-semibold tracking-tight">Dory</span>
           </a>
           <div className="hidden items-center space-x-8 md:flex">
@@ -73,17 +71,6 @@ export default function Home() {
               Book a Demo
             </a>
           </div>
-          <div className="mt-16 w-full border-t border-white/5 pt-10">
-            <p className="mb-6 text-xs uppercase tracking-wider text-brand-muted">
-              Trusted by teams building autonomous systems
-            </p>
-            <div className="flex flex-wrap items-center justify-center gap-x-12 gap-y-6 opacity-50">
-              <div className="text-2xl font-bold tracking-tight">TechCorp</div>
-              <div className="text-2xl font-bold tracking-tight">Autonoma</div>
-              <div className="text-2xl font-bold tracking-tight">ScaleAI</div>
-              <div className="text-2xl font-bold tracking-tight">NeuralInc</div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -142,6 +129,53 @@ response = client.messages.create(
     max_tokens=1024,
     messages=[{"role": "user", "content": prompt}],
 )`}</pre>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 py-4">
+        <div className="mx-auto max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+          <div>
+            <p className="text-lg font-semibold text-white mb-1">Monitor your usage intuitively</p>
+            <p className="text-sm text-brand-muted">Real-time spend breakdowns per agent, model, and function — all in one place.</p>
+          </div>
+          <div>
+            <p className="text-lg font-semibold text-white mb-1">Easy to import</p>
+            <p className="text-sm text-brand-muted">One line to wrap your existing Anthropic client. No refactoring required.</p>
+          </div>
+          <div>
+            <p className="text-lg font-semibold text-white mb-1">Configurable YAML for full control</p>
+            <p className="text-sm text-brand-muted">Set budgets, alerts, and rate limits per agent with a simple config file.</p>
+          </div>
+        </div>
+      </section>
+
+      <section className="relative px-6 py-20">
+        <div className="mx-auto max-w-5xl">
+          <div className="overflow-hidden rounded-xl border border-white/10 bg-brand-panel shadow-2xl">
+            <div className="flex items-center space-x-2 border-b border-white/10 bg-brand-dark/50 px-4 py-3">
+              <div className="h-3 w-3 rounded-full bg-red-500/80" />
+              <div className="h-3 w-3 rounded-full bg-yellow-500/80" />
+              <div className="h-3 w-3 rounded-full bg-green-500/80" />
+              <span className="ml-4 font-mono text-xs text-brand-muted">dory.yaml</span>
+            </div>
+            <div className="overflow-x-auto p-6 font-mono text-sm md:p-8">
+              <pre className="text-brand-muted leading-relaxed">{`agents:
+  document-pipeline:
+    budget_usd: 50.00        `}<span className="text-white/30"># hard cap per month</span>{`
+    alert_at: 0.80           `}<span className="text-white/30"># alert at 80% usage</span>{`
+    model_preference: sonnet `}<span className="text-white/30"># fallback if opus exceeds budget</span>{`
+
+  support-bot:
+    budget_usd: 10.00
+    alert_at: 0.90
+    rate_limit: 100          `}<span className="text-white/30"># max calls per hour</span>{`
+
+  data-extractor:
+    budget_usd: 5.00
+    alert_at: 0.75
+    block_on_exceed: true    `}<span className="text-white/30"># hard stop, no overages</span></pre>
             </div>
           </div>
         </div>
@@ -216,9 +250,7 @@ response = client.messages.create(
       <footer className="border-t border-white/5 px-6 py-12">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between md:flex-row">
           <div className="mb-4 flex items-center space-x-2 md:mb-0">
-            <div className="flex h-6 w-6 items-center justify-center rounded bg-brand-cyan">
-              <span className="text-xs font-bold text-brand-dark">D</span>
-            </div>
+            <img src="/icon.png" alt="Dory" className="h-12 w-12 object-contain" />
             <span className="font-semibold">Dory</span>
           </div>
           <div className="flex space-x-6 text-sm text-brand-muted">

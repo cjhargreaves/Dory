@@ -106,6 +106,16 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  async function resetAll() {
+    if (!confirm('Delete all spend data? This cannot be undone.')) return;
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (API_KEY) headers['X-API-Key'] = API_KEY;
+    await fetch(`${API_URL}/api/spend/all`, { method: 'DELETE', headers });
+    setSummary(null);
+    setEvents([]);
+    setDetails([]);
+  }
+
   async function load() {
     setLoading(true);
     setError(null);
@@ -172,14 +182,12 @@ export default function Dashboard() {
       {/* Nav */}
       <nav className="sticky top-0 z-50 bg-brand-dark/80 backdrop-blur border-b border-white/5 px-6 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            <a href="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-brand-cyan rounded-lg flex items-center justify-center">
-                <span className="text-brand-dark font-bold text-lg">D</span>
-              </div>
+          <div className="flex items-center gap-3">
+            <a href="/" className="flex items-center gap-2">
+              <img src="/icon.png" alt="Dory" className="h-14 w-14 object-contain" />
               <span className="font-semibold text-xl tracking-tight">Dory</span>
             </a>
-            <span className="ml-3 px-2 py-0.5 rounded text-xs bg-brand-panel border border-white/10 text-brand-muted font-mono">
+            <span className="px-2.5 py-1 rounded-md text-xs bg-brand-panel border border-white/10 text-brand-muted font-mono">
               Dashboard
             </span>
           </div>
@@ -217,6 +225,15 @@ export default function Dashboard() {
         )}
 
         {/* Stat cards */}
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-sm font-mono text-brand-muted tracking-widest">OVERVIEW</h2>
+          <button
+            onClick={resetAll}
+            className="text-xs text-red-400/50 hover:text-red-400 transition font-mono"
+          >
+            Reset all data
+          </button>
+        </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-10">
           <StatCard
             label="TOTAL SPEND (30D)"
