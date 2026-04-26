@@ -127,3 +127,49 @@ async def recent_events():
         {}, {"_id": 0}
     ).sort("timestamp", -1).limit(50).to_list(length=50)
     return {"events": events}
+
+
+@router.get("/api/spend/session", dependencies=[Depends(verify_api_key)])
+async def session_spend(hours: int = 4):
+    db = get_db()
+    since = datetime.now(timezone.utc) - timedelta(hours=hours)
+
+    events = await db.spend_events.find(
+        {"timestamp": {"$gte": since}}, {"_id": 0}
+    ).sort("cost_usd", -1).to_list(length=500)
+
+    total = sum(e["cost_usd"] for e in events)
+
+    by_agent: dict = {}
+    for e in events:
+        a = e["agent"]
+        if a not in by_agent:
+            by_agent[a] = {"agent": a, "total_cost_usd": 0.0, "call_count": 0}
+        by_agent[a]["total_cost_usd"] += e["cost_usd"]
+        by_agent[a]["call_count"] += 1
+
+    agents = sorted(by_agent.values(), key=lambda x: x["total_cost_usd"], reverse=True)
+    for a in agents:
+        a["total_cost_usd"] = round(a["total_cost_usd"], 6)
+
+    top_calls = []
+    for e in events[:10]:
+        call = {
+            "agent": e["agent"],
+            "model": e.get("model", "unknown"),
+            "cost_usd": round(e["cost_usd"], 6),
+            "input_tokens": e.get("input_tokens", 0),
+            "output_tokens": e.get("output_tokens", 0),
+            "function_name": e.get("function_name"),
+        }
+        if e.get("call_site"):
+            call["call_site"] = e["call_site"]
+        top_calls.append(call)
+
+    return {
+        "hours": hours,
+        "total_cost_usd": round(total, 6),
+        "call_count": len(events),
+        "agents": agents,
+        "top_calls": top_calls,
+    }
