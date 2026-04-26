@@ -282,7 +282,7 @@ def _post_generate_content(prompt: str, api_key: str, gemini_model: str) -> dict
         "generationConfig": {
             "temperature": 0.2,
             "topP": 0.9,
-            "maxOutputTokens": 1200,
+            "maxOutputTokens": 16384,
         },
     }
 

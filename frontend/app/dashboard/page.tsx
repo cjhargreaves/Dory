@@ -106,6 +106,7 @@ function StatCard({ label, value, sub }: { label: string; value: string; sub?: s
 export default function Dashboard() {
   const { user } = useUser();
   const { signOut } = useClerk();
+  const [mounted, setMounted] = useState(false);
   const [summary, setSummary] = useState<SpendSummary | null>(null);
   const [events, setEvents] = useState<SpendEvent[]>([]);
   const [details, setDetails] = useState<DetailedBreakdown[]>([]);
@@ -181,7 +182,7 @@ export default function Dashboard() {
     }
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { setMounted(true); load(); }, []);
 
   const totalCalls = summary?.agents.reduce((s, a) => s + a.call_count, 0) ?? 0;
   const totalTokens = summary?.agents.reduce(
