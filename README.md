@@ -1,6 +1,6 @@
-# Dory
+<img src="frontend/public/icon.png" width="48" align="left" style="margin-right: 12px" />
 
-<img src="frontend/public/icon.png" width="80" />
+# Dory
 
 Dory tracks what your AI agents spend. Wrap your LLM client with one line of Python and every call, tokens, cost, and source location shows up in your dashboard in real time.
 
