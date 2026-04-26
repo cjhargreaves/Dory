@@ -291,8 +291,8 @@ export default function Dashboard() {
                         ))}
                       </Pie>
                       <Tooltip
-                        formatter={(value: number, name: string, props: any) => [
-                          `$${value.toFixed(6)} (${props.payload.percentage.toFixed(1)}%)`,
+                        formatter={(value, name, props) => [
+                          `$${Number(value).toFixed(6)} (${props.payload.percentage.toFixed(1)}%)`,
                           name
                         ]}
                       />
