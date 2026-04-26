@@ -150,6 +150,16 @@ export default function Dashboard() {
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
 
+  async function resetAll() {
+    if (!confirm('Delete all spend data? This cannot be undone.')) return;
+    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
+    if (API_KEY) headers['X-API-Key'] = API_KEY;
+    await fetch(`${API_URL}/api/spend/all`, { method: 'DELETE', headers });
+    setSummary(null);
+    setEvents([]);
+    setDetails([]);
+  }
+
   async function load() {
     setLoading(true);
     setError(null);
@@ -246,6 +256,17 @@ export default function Dashboard() {
               <span className="text-xl font-semibold tracking-tight">Dory</span>
             </a>
             <span className="ml-3 rounded border border-white/10 bg-brand-panel px-2 py-0.5 font-mono text-xs text-brand-muted">
+    <div className="min-h-screen bg-brand-dark text-brand-text font-sans antialiased">
+
+      {/* Nav */}
+      <nav className="sticky top-0 z-50 bg-brand-dark/80 backdrop-blur border-b border-white/5 px-6 py-4">
+        <div className="max-w-7xl mx-auto flex justify-between items-center">
+          <div className="flex items-center gap-3">
+            <a href="/" className="flex items-center gap-2">
+              <img src="/icon.png" alt="Dory" className="h-14 w-14 object-contain" />
+              <span className="font-semibold text-xl tracking-tight">Dory</span>
+            </a>
+            <span className="px-2.5 py-1 rounded-md text-xs bg-brand-panel border border-white/10 text-brand-muted font-mono">
               Dashboard
             </span>
           </div>
@@ -298,40 +319,47 @@ export default function Dashboard() {
           </div>
         ) : null}
 
-        <div className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        {/* Stat cards */}
+        <div className="flex justify-between items-center mb-4">
+          <h2 className="text-sm font-mono text-brand-muted tracking-widest">OVERVIEW</h2>
+          <button
+            onClick={resetAll}
+            className="text-xs text-red-400/50 hover:text-red-400 transition font-mono"
+          >
+            Reset all data
+          </button>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-10">
           <StatCard
             label="TOTAL SPEND (30D)"
-            value={summary ? fmtUsd(summary.total_cost_usd) : '-'}
-            sub={loading ? 'Loading...' : undefined}
+            value={summary ? fmtUsd(summary.total_cost_usd) : '$0.00'}
+            sub={loading ? 'Loading…' : undefined}
           />
           <StatCard
             label="ACTIVE AGENTS"
-            value={summary ? String(summary.agents.length) : '-'}
+            value={summary ? String(summary.agents.length) : '0'}
             sub={summary ? `${totalCalls.toLocaleString()} total calls` : undefined}
           />
           <StatCard
             label="TOTAL TOKENS"
-            value={summary ? totalTokens.toLocaleString() : '-'}
+            value={summary ? totalTokens.toLocaleString() : '0'}
             sub="input + output"
           />
           <StatCard
             label="MODELS IN USE"
-            value={summary ? String(summary.models.length) : '-'}
-            sub={summary
-              ? `${summary.models.reduce((sum, model) => sum + model.call_count, 0).toLocaleString()} total calls`
-              : undefined}
+            value={summary ? String(summary.models.length) : '0'}
+            sub={summary ? `${summary.models.reduce((s, m) => s + m.call_count, 0).toLocaleString()} total calls` : undefined}
           />
           <StatCard
             label="TOP MODEL"
-            value={summary && summary.models.length > 0
-              ? summary.models[0].model.split('/').pop() || summary.models[0].model
-              : '-'}
-            sub={summary && summary.models.length > 0 && summary.total_cost_usd > 0
-              ? `${((summary.models[0].total_cost_usd / summary.total_cost_usd) * 100).toFixed(1)}% of spend`
-              : undefined}
+            value={summary && summary.models.length > 0 ? summary.models[0].model.split('/').pop() || summary.models[0].model : 'none'}
+            sub={summary && summary.models.length > 0 ? `${(summary.models[0].total_cost_usd / summary.total_cost_usd * 100).toFixed(1)}% of spend` : undefined}
           />
         </div>
 
+        {summary && summary.agents.length > 0 && <>
+
+        {/* Model Usage Pie Chart */}
         <section className="mb-10">
           <div className="rounded-xl border border-white/5 bg-brand-panel p-6">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -416,18 +444,10 @@ export default function Dashboard() {
                         ))}
                       </Pie>
                       <Tooltip
-                        formatter={(value, name, tooltipEntry) => {
-                          const numericValue = typeof value === 'number' ? value : Number(value ?? 0);
-                          const percentage =
-                            typeof tooltipEntry?.payload?.percentage === 'number'
-                              ? tooltipEntry.payload.percentage
-                              : 0;
-
-                          return [
-                            `${fmtUsd(numericValue)} (${percentage.toFixed(1)}%)`,
-                            String(name),
-                          ];
-                        }}
+                        formatter={(value, name, props) => [
+                          `$${Number(value).toFixed(6)} (${props.payload.percentage.toFixed(1)}%)`,
+                          name
+                        ]}
                       />
                     </PieChart>
                   </ResponsiveContainer>
@@ -742,6 +762,9 @@ export default function Dashboard() {
             )}
           </div>
         </section>
+
+        </>}
+
       </main>
     </div>
   );
