@@ -1,22 +1,24 @@
 # Dory
 
-Dory tracks what your AI agents spend. Wrap your LLM client with one line of Python and every call — tokens, cost, source location — shows up in your dashboard in real time.
+**[doryswimming.xyz](https://doryswimming.xyz)**
+
+Dory tracks what your AI agents spend. Wrap your LLM client with one line of Python and every call, tokens, cost, and source location shows up in your dashboard in real time.
 
 ## Why
 
-Agentic AI costs are invisible until they aren't. Dory makes them visible as they happen: per agent, per function, per line of code. You can see which task cost $0.43, which function is driving 80% of your bill, and whether an agent is on track to blow its budget before it does.
+Agentic AI costs are invisible until they aren't. Dory makes them visible as they happen: per agent, per function, per line of code. You can see which task cost $0.43, which function is driving 80% of your bill, and whether an agent is approaching its budget before it does.
 
 ## Features
 
-- **Multi-provider SDK** — wraps Anthropic, OpenAI, and Gemini clients with zero code changes
-- **Source capture** — records the exact file, line, and function that triggered each call
-- **Live dashboard** — real-time spend via MongoDB change streams, no refresh needed
-- **Agent pie chart + time series** — cost breakdown and trend over time
-- **Function breakdown** — see spend by function with inline code snippets
-- **Per-task tracking** — `start_task` / `end_task` in your MCP agent to group spend by what you were building
-- **Budget tracking** — check remaining budget for any agent mid-task
-- **MCP integration** — five tools available to any MCP-compatible coding agent (Windsurf/Cascade is the first supported)
-- **AI suggestions** — Gemini-powered cost analysis with actionable recommendations
+- Multi-provider SDK wrapping Anthropic, OpenAI, and Gemini with zero code changes
+- Source capture records the exact file, line, and function behind each call
+- Live dashboard via MongoDB change streams, no refresh needed
+- Agent pie chart and time series showing cost breakdown and trend
+- Function breakdown with inline code snippets
+- Per-task tracking groups spend by what you were building
+- Budget tracking lets any MCP agent check remaining budget mid-task
+- MCP integration with five tools for any MCP-compatible coding agent
+- AI suggestions powered by Gemini with actionable cost recommendations
 
 ## Stack
 
@@ -25,68 +27,6 @@ Agentic AI costs are invisible until they aren't. Dory makes them visible as the
 - **Auth:** Clerk
 - **SDK:** Python (`dory-sdk`)
 - **MCP Server:** stdio, works with any MCP-compatible agent
-
-## SDK
-
-```bash
-pip install dory-sdk
-```
-
-Wrap your client once. Everything else is unchanged.
-
-**Anthropic**
-```python
-import anthropic, dory
-
-client = dory.wrap(
-    anthropic.Anthropic(api_key="sk-ant-..."),
-    agent="my-agent",
-    api_url="https://your-backend.up.railway.app",
-    api_key="your-dory-key",
-)
-
-response = client.messages.create(
-    model="claude-haiku-4-5-20251001",
-    max_tokens=256,
-    messages=[{"role": "user", "content": "Summarise this"}],
-)
-```
-
-**OpenAI**
-```python
-import openai, dory
-
-client = dory.wrap(
-    openai.OpenAI(api_key="sk-..."),
-    agent="my-agent",
-    api_url="https://your-backend.up.railway.app",
-    api_key="your-dory-key",
-)
-
-response = client.chat.completions.create(
-    model="gpt-4o-mini",
-    messages=[{"role": "user", "content": "Summarise this"}],
-)
-```
-
-**Gemini**
-```python
-import google.genai, dory
-
-client = dory.wrap(
-    google.genai.Client(api_key="AIza..."),
-    agent="my-agent",
-    api_url="https://your-backend.up.railway.app",
-    api_key="your-dory-key",
-)
-
-response = client.models.generate_content(
-    model="gemini-2.5-flash",
-    contents="Summarise this",
-)
-```
-
-`dory.wrap()` auto-detects the client type. After each call it reads token usage, calculates cost, and fires the event to your backend in a background thread — no latency added to your agent.
 
 ## API
 
@@ -98,7 +38,7 @@ All endpoints require `X-API-Key: <your-dory-key>`.
 | `GET` | `/api/spend/summary` | 30-day aggregated spend by agent, model, and function |
 | `GET` | `/api/spend/session?hours=N` | Rolling window spend with top calls and source locations |
 | `GET` | `/api/spend/events` | Raw 50 most recent events |
-| `GET` | `/api/spend/stream` | SSE stream — fires `update` on every new event (MongoDB change stream) |
+| `GET` | `/api/spend/stream` | SSE stream, fires `update` on every new event via MongoDB change stream |
 | `POST` | `/api/tasks` | Create a named task `{"name": "...", "agent": "..."}` |
 | `POST` | `/api/tasks/{id}/end` | Close a task and return cost summary |
 | `GET` | `/api/tasks` | List recent tasks with cost and duration |
@@ -142,4 +82,4 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 NEXT_PUBLIC_API_KEY=your-api-key
 ```
 
-**MCP server** — see [doryswimming.xyz/docs](https://doryswimming.xyz/docs) for setup guide.
+**SDK and MCP setup:** [doryswimming.xyz/docs](https://doryswimming.xyz/docs)
