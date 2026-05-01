@@ -317,12 +317,12 @@ export default function Dashboard() {
     <div className="min-h-screen bg-brand-dark text-brand-text font-sans antialiased">
 
       {/* Nav */}
-      <nav className="sticky top-0 z-50 bg-brand-dark/80 backdrop-blur border-b border-white/5 px-6 py-4">
+      <nav className="sticky top-0 z-50 bg-brand-dark/80 backdrop-blur border-b border-white/5 px-6 py-1">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-3">
             <a href="/" className="flex items-center gap-2">
-              <img src="/icon.png" alt="Dory" className="h-14 w-14 object-contain" />
-              <span className="font-semibold text-xl tracking-tight">Dory</span>
+              <img src="/logo.png" alt="Keel" className="h-24 w-24 object-contain" />
+              <span className="font-semibold text-xl tracking-tight">Keel</span>
             </a>
             <span className="px-2.5 py-1 rounded-md text-xs bg-brand-panel border border-white/10 text-brand-muted font-mono">
               Dashboard

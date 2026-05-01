@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-dark: #0f172a;
-  --color-brand-panel: #1e293b;
-  --color-brand-cyan: #06b6d4;
-  --color-brand-text: #f8fafc;
-  --color-brand-muted: #94a3b8;
+  --color-brand-dark: #1F2A38;
+  --color-brand-panel: #2A3B4F;
+  --color-brand-cyan: #7C83C9;
+  --color-brand-text: #F5F6F7;
+  --color-brand-muted: #8FAEC2;
   --font-sans: "Inter", "Segoe UI", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", "Consolas", monospace;
 }
@@ -14,13 +14,101 @@
   color-scheme: dark;
 }
 
-html,
-body {
+html {
   min-height: 100%;
-  background: var(--color-brand-dark);
-  color: var(--color-brand-text);
 }
 
 body {
+  min-height: 100%;
+  color: var(--color-brand-text);
+  background: #1F2A38;
   font-family: var(--font-sans);
+}
+
+/* Fade-up animation */
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-up {
+  animation: fadeUp 0.65s ease-out both;
+}
+
+.fade-up-1 { animation-delay: 0.05s; }
+.fade-up-2 { animation-delay: 0.15s; }
+.fade-up-3 { animation-delay: 0.28s; }
+.fade-up-4 { animation-delay: 0.42s; }
+.fade-up-5 { animation-delay: 0.58s; }
+
+/* Dynamic background — no filter:blur, gradient handles the softness */
+.water-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.water-blob {
+  position: absolute;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+/* Violet orb — top-left, very subtle */
+.water-blob-1 {
+  width: 140%;
+  height: 140%;
+  top: -60%;
+  left: -30%;
+  background: radial-gradient(ellipse at center, rgba(124, 131, 201, 0.08) 0%, transparent 58%);
+  animation: waterDrift1 32s ease-in-out infinite;
+}
+
+/* Steel-blue orb — bottom-right */
+.water-blob-2 {
+  width: 120%;
+  height: 120%;
+  bottom: -50%;
+  right: -20%;
+  background: radial-gradient(ellipse at center, rgba(79, 107, 134, 0.10) 0%, transparent 58%);
+  animation: waterDrift2 26s ease-in-out infinite;
+}
+
+/* Mid-blue orb — center, very faint */
+.water-blob-3 {
+  width: 90%;
+  height: 90%;
+  top: 20%;
+  left: 15%;
+  background: radial-gradient(ellipse at center, rgba(111, 127, 209, 0.05) 0%, transparent 58%);
+  animation: waterDrift3 42s ease-in-out infinite;
+}
+
+@keyframes waterDrift1 {
+  0%   { transform: translateZ(0) translate(0px, 0px); }
+  33%  { transform: translateZ(0) translate(80px, 60px); }
+  66%  { transform: translateZ(0) translate(-40px, 120px); }
+  100% { transform: translateZ(0) translate(0px, 0px); }
+}
+
+@keyframes waterDrift2 {
+  0%   { transform: translateZ(0) translate(0px, 0px); }
+  40%  { transform: translateZ(0) translate(-70px, -80px); }
+  70%  { transform: translateZ(0) translate(50px, -30px); }
+  100% { transform: translateZ(0) translate(0px, 0px); }
+}
+
+@keyframes waterDrift3 {
+  0%   { transform: translateZ(0) translate(0px, 0px); }
+  25%  { transform: translateZ(0) translate(60px, -50px); }
+  50%  { transform: translateZ(0) translate(-50px, 40px); }
+  75%  { transform: translateZ(0) translate(30px, 80px); }
+  100% { transform: translateZ(0) translate(0px, 0px); }
 }

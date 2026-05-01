@@ -1,17 +1,18 @@
 'use client';
 
 import { useUser } from '@clerk/nextjs';
+import { FadeIn } from './components/FadeIn';
 
 export default function Home() {
   const { user } = useUser();
 
   return (
-    <div className="bg-brand-dark text-brand-text font-sans antialiased">
-      <nav className="absolute z-50 w-full px-6 py-4">
+    <div className="relative z-10 text-brand-text font-sans antialiased">
+      <nav className="absolute z-50 w-full px-6 py-1 fade-up border-b border-white/8 backdrop-blur-sm">
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <a href="/" className="flex items-center space-x-2">
-            <img src="/icon.png" alt="Dory" className="h-16 w-16 object-contain" />
-            <span className="text-xl font-semibold tracking-tight">Dory</span>
+            <img src="/logo.png" alt="Keel" className="h-24 w-24 object-contain" />
+            <span className="text-xl font-semibold tracking-tight">Keel</span>
           </a>
           <div className="hidden items-center space-x-8 md:flex">
             <a href="#features" className="text-brand-muted transition hover:text-white">
@@ -42,25 +43,25 @@ export default function Home() {
       <section className="relative flex min-h-screen items-center justify-center overflow-hidden pb-10 pt-20">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-brand-cyan/10 via-brand-dark to-brand-dark" />
         <div className="relative z-10 mx-auto max-w-4xl px-6 text-center">
-          <div className="mb-8 inline-flex items-center rounded-full border border-white/10 bg-brand-panel px-3 py-1">
+          <div className="mb-8 inline-flex items-center rounded-full border border-white/10 bg-brand-panel px-3 py-1 fade-up fade-up-1">
             <span className="mr-2 h-2 w-2 rounded-full bg-green-500 animate-pulse" />
             <span className="text-sm text-brand-muted">Now in Beta for Early Adopters</span>
           </div>
-          <h1 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-6xl lg:text-7xl">
+          <h1 className="mb-6 text-4xl font-bold leading-tight tracking-tight md:text-6xl lg:text-7xl fade-up fade-up-2">
             Stop burning cash on
             <br />
-            <span className="bg-gradient-to-r from-brand-cyan to-cyan-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-brand-cyan to-[#8FAEC2] bg-clip-text text-transparent">
               invisible AI agents.
             </span>
           </h1>
-          <p className="mx-auto mb-10 max-w-2xl text-lg text-brand-muted md:text-xl">
+          <p className="mx-auto mb-10 max-w-2xl text-lg text-brand-muted md:text-xl fade-up fade-up-3">
             The observability layer for autonomous spend. Track every model call, set hard limits,
             and attribute costs down to the specific agent workflow.
           </p>
-          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row">
+          <div className="flex flex-col items-center justify-center gap-4 sm:flex-row fade-up fade-up-4">
             <a
               href="#"
-              className="w-full rounded-lg bg-brand-cyan px-8 py-3 font-semibold text-brand-dark shadow-lg shadow-cyan-500/20 transition hover:bg-cyan-300 sm:w-auto"
+              className="w-full rounded-lg bg-brand-cyan px-8 py-3 font-semibold text-brand-dark shadow-lg shadow-[#C3B4D9]/20 transition hover:bg-[#D4C9E8] sm:w-auto"
             >
               Start Monitoring Free
             </a>
@@ -74,6 +75,7 @@ export default function Home() {
         </div>
       </section>
 
+      <FadeIn>
       <section className="relative px-6 py-20">
         <div className="mx-auto max-w-5xl">
           <div className="overflow-hidden rounded-xl border border-white/10 bg-brand-panel shadow-2xl">
@@ -81,7 +83,7 @@ export default function Home() {
               <div className="h-3 w-3 rounded-full bg-red-500/80" />
               <div className="h-3 w-3 rounded-full bg-yellow-500/80" />
               <div className="h-3 w-3 rounded-full bg-green-500/80" />
-              <span className="ml-4 font-mono text-xs text-brand-muted">dashboard.dory.io</span>
+              <span className="ml-4 font-mono text-xs text-brand-muted">dashboard.keel.dev</span>
             </div>
             <div className="grid grid-cols-1 gap-6 p-6 md:grid-cols-3 md:p-8">
               <div className="rounded-lg border border-white/5 bg-brand-dark/50 p-4">
@@ -114,13 +116,13 @@ export default function Home() {
             </div>
             <div className="overflow-x-auto border-t border-white/5 bg-brand-dark/30 p-6 font-mono text-sm">
               <pre>{`import anthropic
-import dory
+import keel
 
-client = dory.wrap(
+client = keel.wrap(
     anthropic.Anthropic(),
     agent="document-pipeline",
-    api_url="https://api.dory.io",
-    api_key="dory_sk_live_...",
+    api_url="https://api.keel.dev",
+    api_key="keel_sk_live_...",
 )
 
 # Every call is tracked automatically
@@ -133,7 +135,9 @@ response = client.messages.create(
           </div>
         </div>
       </section>
+      </FadeIn>
 
+      <FadeIn>
       <section className="px-6 py-4">
         <div className="mx-auto max-w-5xl grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
           <div>
@@ -150,7 +154,9 @@ response = client.messages.create(
           </div>
         </div>
       </section>
+      </FadeIn>
 
+      <FadeIn>
       <section className="relative px-6 py-20">
         <div className="mx-auto max-w-5xl">
           <div className="overflow-hidden rounded-xl border border-white/10 bg-brand-panel shadow-2xl">
@@ -180,7 +186,9 @@ response = client.messages.create(
           </div>
         </div>
       </section>
+      </FadeIn>
 
+      <FadeIn>
       <section id="features" className="px-6 py-20">
         <div className="mx-auto max-w-7xl">
           <div className="mb-16 text-center">
@@ -246,12 +254,14 @@ response = client.messages.create(
           </div>
         </div>
       </section>
+      </FadeIn>
 
+      <FadeIn>
       <footer className="border-t border-white/5 px-6 py-12">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between md:flex-row">
           <div className="mb-4 flex items-center space-x-2 md:mb-0">
-            <img src="/icon.png" alt="Dory" className="h-12 w-12 object-contain" />
-            <span className="font-semibold">Dory</span>
+            <img src="/logo.png" alt="Keel" className="h-20 w-20 object-contain" />
+            <span className="font-semibold">Keel</span>
           </div>
           <div className="flex space-x-6 text-sm text-brand-muted">
             <a href="#" className="transition hover:text-white">
@@ -269,6 +279,7 @@ response = client.messages.create(
           </div>
         </div>
       </footer>
+      </FadeIn>
     </div>
   );
 }

@@ -122,8 +122,8 @@ export default function Docs() {
               <iconify-icon icon="lucide:menu" width="20" class="text-brand-muted" />
             </button>
             <a href="/" className="flex items-center space-x-2">
-              <img src="/icon.png" alt="Dory" className="h-10 w-10 object-contain" />
-              <span className="font-semibold text-lg tracking-tight">Dory</span>
+              <img src="/logo.png" alt="Keel" className="h-10 w-10 object-contain" />
+              <span className="font-semibold text-lg tracking-tight">Keel</span>
               <span className="hidden sm:inline text-xs font-medium text-brand-muted bg-brand-panel border border-white/10 rounded px-2 py-0.5 ml-1">Docs</span>
             </a>
           </div>
@@ -133,7 +133,7 @@ export default function Docs() {
               <span className="text-xs text-brand-muted">Search docs...</span>
               <kbd className="ml-6 text-[10px] text-brand-muted bg-brand-dark px-1.5 py-0.5 rounded border border-white/10">⌘K</kbd>
             </div>
-            <a href="https://github.com/cjhargreaves/Dory" className="hidden sm:flex items-center gap-1.5 text-xs text-brand-muted hover:text-brand-cyan transition px-2.5 py-1.5 rounded-md hover:bg-brand-cyan/5">
+            <a href="https://github.com/cjhargreaves/Keel" className="hidden sm:flex items-center gap-1.5 text-xs text-brand-muted hover:text-brand-cyan transition px-2.5 py-1.5 rounded-md hover:bg-brand-cyan/5">
               <iconify-icon icon="lucide:github" width="14" />
               GitHub
             </a>
@@ -182,20 +182,20 @@ export default function Docs() {
               <div>
                 <div className="mb-6"><Badge label="GETTING STARTED" /></div>
                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Quick Start</h1>
-                <p className="text-lg text-brand-muted mb-10 max-w-2xl">Get Dory running in under 5 minutes. Install the SDK, wrap your Anthropic client, and start tracking costs automatically.</p>
+                <p className="text-lg text-brand-muted mb-10 max-w-2xl">Get Keel running in under 5 minutes. Install the SDK, wrap your Anthropic client, and start tracking costs automatically.</p>
                 <div className="space-y-10">
                   <Step n={1} title="Install the SDK">
-                    <CodeBlock filename="Terminal" code="pip install dory-sdk" />
+                    <CodeBlock filename="Terminal" code="pip install keel-sdk" />
                   </Step>
                   <Step n={2} title="Wrap your Anthropic client">
                     <CodeBlock filename="agent.py" code={`import anthropic
-import dory
+import keel
 
-client = dory.wrap(
+client = keel.wrap(
     anthropic.Anthropic(api_key="sk-ant-..."),
     agent="my-agent",
     api_url="http://localhost:8000",
-    api_key="your-dory-key",
+    api_key="your-keel-key",
 )
 
 # Use exactly like the normal Anthropic client, nothing else changes
@@ -210,7 +210,7 @@ print(response.content[0].text)`} />
                   </Step>
                   <Step n={3} title="Verify spend was tracked">
                     <CodeBlock filename="Terminal" code={`curl http://localhost:8000/api/spend/summary \\
-  -H "X-API-Key: your-dory-key"`} />
+  -H "X-API-Key: your-keel-key"`} />
                     <div className="bg-brand-panel rounded-lg border border-white/5 p-5 mt-3">
                       <div className="grid grid-cols-3 gap-4 mb-4">
                         <div>
@@ -238,18 +238,18 @@ print(response.content[0].text)`} />
               <div>
                 <div className="mb-6"><Badge label="GETTING STARTED" /></div>
                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Installation</h1>
-                <p className="text-lg text-brand-muted mb-10 max-w-2xl">Dory ships a Python SDK. Python 3.9 or higher is required.</p>
+                <p className="text-lg text-brand-muted mb-10 max-w-2xl">Keel ships a Python SDK. Python 3.9 or higher is required.</p>
 
                 <h2 className="text-xl font-semibold mb-4">Install</h2>
-                <CodeBlock filename="Terminal" code="pip install dory-sdk" />
+                <CodeBlock filename="Terminal" code="pip install keel-sdk" />
 
                 <h2 className="text-xl font-semibold mt-8 mb-4">Using a virtual environment (recommended)</h2>
                 <CodeBlock filename="Terminal" code={`python3 -m venv venv
 source venv/bin/activate
-pip install dory-sdk`} />
+pip install keel-sdk`} />
 
                 <h2 className="text-xl font-semibold mt-8 mb-4">Add to requirements</h2>
-                <CodeBlock filename="requirements.txt" code="dory-sdk>=0.1.0" />
+                <CodeBlock filename="requirements.txt" code="keel-sdk>=0.1.0" />
 
                 <h2 className="text-xl font-semibold mt-8 mb-4">Requirements</h2>
                 <div className="bg-brand-panel rounded-lg border border-white/5 overflow-hidden">
@@ -282,17 +282,17 @@ pip install dory-sdk`} />
               <div>
                 <div className="mb-6"><Badge label="MODEL PROVIDERS" /></div>
                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Anthropic</h1>
-                <p className="text-lg text-brand-muted mb-10 max-w-2xl">Wrap the Anthropic client with <code className="text-brand-cyan font-mono text-base">dory.wrap()</code> to automatically track every Claude model call.</p>
+                <p className="text-lg text-brand-muted mb-10 max-w-2xl">Wrap the Anthropic client with <code className="text-brand-cyan font-mono text-base">keel.wrap()</code> to automatically track every Claude model call.</p>
 
                 <h2 className="text-xl font-semibold mb-4">Basic usage</h2>
                 <CodeBlock filename="agent.py" code={`import anthropic
-import dory
+import keel
 
-client = dory.wrap(
+client = keel.wrap(
     anthropic.Anthropic(api_key="sk-ant-..."),
     agent="my-agent",       # name shown in the dashboard
     api_url="http://localhost:8000",
-    api_key="your-dory-key",
+    api_key="your-keel-key",
 )
 
 response = client.messages.create(
@@ -304,7 +304,7 @@ print(response.content[0].text)`} />
 
                 <h2 className="text-xl font-semibold mt-10 mb-4">How it works</h2>
                 <p className="text-brand-muted mb-4">
-                  <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">dory.wrap()</code> returns a <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">DoryClient</code> that behaves identically to the standard Anthropic client. After each <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">messages.create()</code> call it reads <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">response.usage</code>, calculates cost, and fires the event to your backend in a background thread.
+                  <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">keel.wrap()</code> returns a <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">KeelClient</code> that behaves identically to the standard Anthropic client. After each <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">messages.create()</code> call it reads <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">response.usage</code>, calculates cost, and fires the event to your backend in a background thread.
                 </p>
 
                 <h2 className="text-xl font-semibold mt-10 mb-4">Supported models</h2>
@@ -345,20 +345,20 @@ print(response.content[0].text)`} />
               <div>
                 <div className="mb-6"><Badge label="MODEL PROVIDERS" /></div>
                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">OpenAI</h1>
-                <p className="text-lg text-brand-muted mb-10 max-w-2xl">Wrap the OpenAI client with <code className="text-brand-cyan font-mono text-base">dory.wrap()</code> to automatically track every GPT model call.</p>
+                <p className="text-lg text-brand-muted mb-10 max-w-2xl">Wrap the OpenAI client with <code className="text-brand-cyan font-mono text-base">keel.wrap()</code> to automatically track every GPT model call.</p>
 
                 <h2 className="text-xl font-semibold mb-4">Install</h2>
-                <CodeBlock filename="Terminal" code="pip install dory-sdk openai" />
+                <CodeBlock filename="Terminal" code="pip install keel-sdk openai" />
 
                 <h2 className="text-xl font-semibold mt-10 mb-4">Basic usage</h2>
                 <CodeBlock filename="agent.py" code={`import openai
-import dory
+import keel
 
-client = dory.wrap(
+client = keel.wrap(
     openai.OpenAI(api_key="sk-..."),
     agent="my-agent",       # name shown in the dashboard
     api_url="http://localhost:8000",
-    api_key="your-dory-key",
+    api_key="your-keel-key",
 )
 
 response = client.chat.completions.create(
@@ -369,7 +369,7 @@ print(response.choices[0].message.content)`} />
 
                 <h2 className="text-xl font-semibold mt-10 mb-4">How it works</h2>
                 <p className="text-brand-muted mb-4">
-                  <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">dory.wrap()</code> detects the OpenAI client automatically and returns a <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">DoryOpenAIClient</code> that is a drop-in replacement. After each <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">chat.completions.create()</code> call it reads <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">response.usage.prompt_tokens</code> and <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">completion_tokens</code>, calculates cost, and fires the event to your backend in a background thread.
+                  <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">keel.wrap()</code> detects the OpenAI client automatically and returns a <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">KeelOpenAIClient</code> that is a drop-in replacement. After each <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">chat.completions.create()</code> call it reads <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">response.usage.prompt_tokens</code> and <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">completion_tokens</code>, calculates cost, and fires the event to your backend in a background thread.
                 </p>
 
                 <h2 className="text-xl font-semibold mt-10 mb-4">Supported models</h2>
@@ -412,20 +412,20 @@ print(response.choices[0].message.content)`} />
               <div>
                 <div className="mb-6"><Badge label="MODEL PROVIDERS" /></div>
                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Gemini</h1>
-                <p className="text-lg text-brand-muted mb-10 max-w-2xl">Wrap the Google GenAI client with <code className="text-brand-cyan font-mono text-base">dory.wrap()</code> to automatically track every Gemini model call.</p>
+                <p className="text-lg text-brand-muted mb-10 max-w-2xl">Wrap the Google GenAI client with <code className="text-brand-cyan font-mono text-base">keel.wrap()</code> to automatically track every Gemini model call.</p>
 
                 <h2 className="text-xl font-semibold mb-4">Install</h2>
-                <CodeBlock filename="Terminal" code="pip install dory-sdk google-genai" />
+                <CodeBlock filename="Terminal" code="pip install keel-sdk google-genai" />
 
                 <h2 className="text-xl font-semibold mt-10 mb-4">Basic usage</h2>
                 <CodeBlock filename="agent.py" code={`import google.genai
-import dory
+import keel
 
-client = dory.wrap(
+client = keel.wrap(
     google.genai.Client(api_key="AIza..."),
     agent="my-agent",       # name shown in the dashboard
     api_url="http://localhost:8000",
-    api_key="your-dory-key",
+    api_key="your-keel-key",
 )
 
 response = client.models.generate_content(
@@ -436,7 +436,7 @@ print(response.text)`} />
 
                 <h2 className="text-xl font-semibold mt-10 mb-4">How it works</h2>
                 <p className="text-brand-muted mb-4">
-                  <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">dory.wrap()</code> detects the Google GenAI client automatically and returns a <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">DoryGeminiClient</code> that is a drop-in replacement. After each <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">models.generate_content()</code> call it reads <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">response.usage_metadata</code>, calculates cost, and fires the event to your backend in a background thread.
+                  <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">keel.wrap()</code> detects the Google GenAI client automatically and returns a <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">KeelGeminiClient</code> that is a drop-in replacement. After each <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">models.generate_content()</code> call it reads <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">response.usage_metadata</code>, calculates cost, and fires the event to your backend in a background thread.
                 </p>
 
                 <h2 className="text-xl font-semibold mt-10 mb-4">Supported models</h2>
@@ -476,17 +476,17 @@ print(response.text)`} />
               <div>
                 <div className="mb-6"><Badge label="MCP INTEGRATION" /></div>
                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">MCP Overview</h1>
-                <p className="text-lg text-brand-muted mb-10 max-w-2xl">The Dory MCP server gives any MCP-compatible coding agent real-time spend visibility and budget awareness, callable mid-task alongside the agent's own tools.</p>
+                <p className="text-lg text-brand-muted mb-10 max-w-2xl">The Keel MCP server gives any MCP-compatible coding agent real-time spend visibility and budget awareness, callable mid-task alongside the agent's own tools.</p>
 
                 <h2 className="text-xl font-semibold mb-4">How it works</h2>
-                <p className="text-brand-muted mb-6">When an MCP-compatible agent starts, it reads your MCP config and launches the Dory server as a subprocess. The agent can then call Dory tools alongside its built-in ones. The server speaks MCP over stdio and forwards requests to your Dory backend over HTTP.</p>
+                <p className="text-brand-muted mb-6">When an MCP-compatible agent starts, it reads your MCP config and launches the Keel server as a subprocess. The agent can then call Keel tools alongside its built-in ones. The server speaks MCP over stdio and forwards requests to your Keel backend over HTTP.</p>
 
                 <div className="bg-brand-panel rounded-lg border border-white/5 p-5 font-mono text-xs text-brand-muted mb-8">
                   <span className="text-brand-cyan">Agent</span> calls tool
                   {" → "}
                   <span className="text-brand-cyan">MCP server</span> (stdio)
                   {" → "}
-                  <span className="text-brand-cyan">Dory backend</span> (HTTP)
+                  <span className="text-brand-cyan">Keel backend</span> (HTTP)
                   {" → "}
                   <span className="text-brand-cyan">MongoDB</span>
                 </div>
@@ -526,7 +526,7 @@ print(response.text)`} />
               <div>
                 <div className="mb-6"><Badge label="MCP INTEGRATION" /></div>
                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">Windsurf Setup</h1>
-                <p className="text-lg text-brand-muted mb-10 max-w-2xl">Add Dory as an MCP server in Windsurf so Cascade can check budgets and log spend during any task.</p>
+                <p className="text-lg text-brand-muted mb-10 max-w-2xl">Add Keel as an MCP server in Windsurf so Cascade can check budgets and log spend during any task.</p>
 
                 <div className="space-y-10">
                   <Step n={1} title="Install MCP server dependencies">
@@ -537,12 +537,12 @@ pip install -e mcp-server/`} />
                     <p className="text-brand-muted mb-3">Open Windsurf, go to <strong className="text-brand-text">Settings → MCP</strong>, and add a new server. The config file lives at <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">~/.codeium/windsurf/mcp_config.json</code>.</p>
                     <CodeBlock filename="~/.codeium/windsurf/mcp_config.json" code={`{
   "mcpServers": {
-    "dory": {
-      "command": "/path/to/Dory/backend/venv/bin/python3",
-      "args": ["/path/to/Dory/mcp-server/server.py"],
+    "keel": {
+      "command": "/path/to/Keel/backend/venv/bin/python3",
+      "args": ["/path/to/Keel/mcp-server/server.py"],
       "env": {
         "DORY_API_URL": "http://localhost:8000",
-        "DORY_API_KEY": "your-dory-key",
+        "KEEL_API_KEY": "your-keel-key",
         "DORY_BUDGET": "10.00",
         "DORY_BUDGET_MY_AGENT": "5.00"
       }
@@ -550,11 +550,11 @@ pip install -e mcp-server/`} />
   }
 }`} />
                     <div className="border-l-2 border-brand-cyan bg-brand-cyan/5 rounded-r-lg p-4">
-                      <p className="text-sm text-brand-text"><code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">DORY_API_KEY</code> should match the <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">DORY_API_KEY</code> set in your <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">backend/.env</code>. Use the full path to your venv Python so the <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">mcp</code> package is found.</p>
+                      <p className="text-sm text-brand-text"><code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">KEEL_API_KEY</code> should match the <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">KEEL_API_KEY</code> set in your <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">backend/.env</code>. Use the full path to your venv Python so the <code className="text-xs font-mono bg-brand-panel px-1.5 py-0.5 rounded text-brand-cyan">mcp</code> package is found.</p>
                     </div>
                   </Step>
                   <Step n={3} title="Restart Windsurf">
-                    <p className="text-brand-muted">Quit and reopen Windsurf. The Dory tools will appear in Cascade's tool list. You can verify by asking Cascade:</p>
+                    <p className="text-brand-muted">Quit and reopen Windsurf. The Keel tools will appear in Cascade's tool list. You can verify by asking Cascade:</p>
                     <div className="bg-brand-panel rounded-lg border border-white/5 p-4 mt-3 font-mono text-sm text-brand-muted italic">
                       "Use start_task to begin tracking this feature, then end_task when you are done."
                     </div>
@@ -563,7 +563,7 @@ pip install -e mcp-server/`} />
                     <CodeBlock filename="Terminal" code={`cd backend
 source venv/bin/activate
 uvicorn app.main:app --reload`} />
-                    <p className="text-sm text-brand-muted">The MCP server is just a relay. It requires the Dory backend to be running to do anything.</p>
+                    <p className="text-sm text-brand-muted">The MCP server is just a relay. It requires the Keel backend to be running to do anything.</p>
                   </Step>
                 </div>
 
