@@ -35,7 +35,7 @@ export default function KeysPage() {
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-brand-text">API Keys</h1>
           <p className="text-brand-muted text-sm mt-1">
-            Keys are used to authenticate the Keel SDK with your backend. Store them securely — they won&apos;t be shown again after creation.
+            Keys are used to authenticate the Keel SDK with your backend. Store them securely. They won&apos;t be shown again after creation.
           </p>
         </div>
         {user && <ApiKeys userId={user.id} />}
