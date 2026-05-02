@@ -29,16 +29,16 @@ class Reporter:
         except urllib.error.HTTPError as exc:
             body = exc.read().decode("utf-8", errors="ignore")
             print(
-                f"[dory] failed to report spend event: HTTP {exc.code} {body or exc.reason}",
+                f"[keel] failed to report spend event: HTTP {exc.code} {body or exc.reason}",
                 file=sys.stderr,
             )
         except urllib.error.URLError as exc:
             print(
-                f"[dory] failed to report spend event: {exc.reason}",
+                f"[keel] failed to report spend event: {exc.reason}",
                 file=sys.stderr,
             )
         except Exception as exc:
             print(
-                f"[dory] failed to report spend event: {exc}",
+                f"[keel] failed to report spend event: {exc}",
                 file=sys.stderr,
             )

@@ -37,7 +37,7 @@ class TrackedMessages:
         return response
 
 
-class DoryClient:
+class KeelClient:
     def __init__(self, client, agent: str, reporter: Reporter):
         self._client = client
         self.messages = TrackedMessages(client.messages, agent, reporter)

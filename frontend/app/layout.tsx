@@ -4,7 +4,7 @@ import { WaterBackground } from "./components/WaterBackground";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Keel - AI Agent Spend Management",
+  title: "Keel: Infrastructure for the agent economy.",
   description:
     "Track every model call, set hard limits, and attribute costs down to the specific agent workflow.",
   icons: {

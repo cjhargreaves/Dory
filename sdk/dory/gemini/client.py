@@ -40,7 +40,7 @@ class TrackedModels:
         return getattr(self._models, name)
 
 
-class DoryGeminiClient:
+class KeelGeminiClient:
     def __init__(self, client, agent: str, reporter: Reporter):
         self._client = client
         self.models = TrackedModels(client.models, agent, reporter)

@@ -1,3 +1,3 @@
-from .client import DoryOpenAIClient
+from .client import KeelOpenAIClient
 
-__all__ = ["DoryOpenAIClient"]
+__all__ = ["KeelOpenAIClient"]

@@ -12,7 +12,7 @@ export default function Home() {
         <div className="mx-auto flex max-w-7xl items-center justify-between">
           <a href="/" className="flex items-center space-x-2">
             <img src="/logo.png" alt="Keel" className="h-24 w-24 object-contain" />
-            <span className="text-xl font-semibold tracking-tight">Keel</span>
+            <span className="text-xl font-semibold tracking-tight text-brand-cyan">Keel</span>
           </a>
           <div className="hidden items-center space-x-8 md:flex">
             <a href="#features" className="text-brand-muted transition hover:text-white">
@@ -164,7 +164,7 @@ response = client.messages.create(
               <div className="h-3 w-3 rounded-full bg-red-500/80" />
               <div className="h-3 w-3 rounded-full bg-yellow-500/80" />
               <div className="h-3 w-3 rounded-full bg-green-500/80" />
-              <span className="ml-4 font-mono text-xs text-brand-muted">dory.yaml</span>
+              <span className="ml-4 font-mono text-xs text-brand-muted">keel.yaml</span>
             </div>
             <div className="overflow-x-auto p-6 font-mono text-sm md:p-8">
               <pre className="text-brand-muted leading-relaxed">{`agents:
@@ -196,7 +196,7 @@ response = client.messages.create(
               Infrastructure for the Agent Economy
             </h2>
             <p className="mx-auto max-w-2xl text-lg text-brand-muted">
-              You wouldn&apos;t run a team without a CFO. Don&apos;t run agents without Dory.
+              You wouldn&apos;t run a team without a CFO. Don&apos;t run agents without Keel.
             </p>
           </div>
           <div className="grid grid-cols-1 gap-8 md:grid-cols-3">

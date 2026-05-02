@@ -21,7 +21,7 @@ def capture_call_site() -> Optional[dict]:
 def _is_user_frame(filename: str) -> bool:
     normalized = filename.replace("\\", "/")
     return (
-        "dory" not in normalized.split("/")
+        "keel" not in normalized.split("/")
         and "<" not in filename  # skip <string>, <frozen ...>
     )
 

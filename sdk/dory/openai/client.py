@@ -44,7 +44,7 @@ class TrackedChat:
         return getattr(self._chat, name)
 
 
-class DoryOpenAIClient:
+class KeelOpenAIClient:
     def __init__(self, client, agent: str, reporter: Reporter):
         self._client = client
         self.chat = TrackedChat(client.chat, agent, reporter)

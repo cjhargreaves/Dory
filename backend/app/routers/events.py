@@ -29,7 +29,7 @@ class SpendEvent(BaseModel):
 
 @router.post("/api/events", dependencies=[Depends(verify_api_key)])
 async def ingest_event(event: SpendEvent):
-    print(f"[dory] agent={event.agent} model={event.model} "
+    print(f"[keel] agent={event.agent} model={event.model} "
           f"input={event.input_tokens} output={event.output_tokens} "
           f"cost=${event.cost_usd:.6f}")
     db = get_db()

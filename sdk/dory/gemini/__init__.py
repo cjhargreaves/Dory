@@ -1,3 +1,3 @@
-from .client import DoryGeminiClient
+from .client import KeelGeminiClient
 
-__all__ = ["DoryGeminiClient"]
+__all__ = ["KeelGeminiClient"]

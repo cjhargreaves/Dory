@@ -21,6 +21,9 @@ async def connect_db():
     await db.spend_events.create_index([("agent", 1), ("timestamp", -1)])
     await db.spend_events.create_index([("model", 1), ("timestamp", -1)])
 
+    await db.api_keys.create_index("key_hash", unique=True)
+    await db.api_keys.create_index("user_id")
+
     return db
 
 

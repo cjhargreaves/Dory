@@ -1,6 +1,6 @@
 import os
 import anthropic
-import dory
+import keel
 
 API_URL = os.environ["DORY_API_URL"]
 API_KEY = os.environ["DORY_API_KEY"]
@@ -53,7 +53,7 @@ CALLS = [
 base_client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
 for call in CALLS:
-    client = dory.wrap(base_client, agent=call["agent"], api_url=API_URL, api_key=API_KEY)
+    client = keel.wrap(base_client, agent=call["agent"], api_url=API_URL, api_key=API_KEY)
     print(f"→ {call['agent']} / {call['model']}...", end=" ", flush=True)
     response = client.messages.create(
         model=call["model"],

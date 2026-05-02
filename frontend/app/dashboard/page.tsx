@@ -331,6 +331,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-4">
             <a href="/" className="text-sm text-brand-muted hover:text-white transition">Home</a>
             <a href="/docs" className="text-sm text-brand-muted hover:text-white transition">Docs</a>
+            <a href="/dashboard/keys" className="text-sm text-brand-muted hover:text-white transition">API Keys</a>
             {user?.primaryEmailAddress?.emailAddress && (
               <span className="text-sm text-brand-muted">{user.primaryEmailAddress.emailAddress}</span>
             )}
