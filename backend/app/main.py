@@ -1,23 +1,27 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 
 from app.routers import ai, health, events, spend, tasks, keys
 from app.database import connect_db, close_db
+from app.limiter import limiter
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup
     db = await connect_db()
     print(f"[keel] MongoDB connected to database '{db.name}'")
     yield
-    # Shutdown
     await close_db()
     print("[keel] MongoDB disconnected")
 
 
 app = FastAPI(title="Keel API", version="0.1.0", lifespan=lifespan)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,

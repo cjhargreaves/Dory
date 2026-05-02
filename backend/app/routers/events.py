@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from typing import Optional
 from datetime import datetime, timezone
 
 from app.database import get_db
 from app.dependencies import verify_api_key
+from app.limiter import limiter
 
 router = APIRouter()
 
@@ -28,7 +29,8 @@ class SpendEvent(BaseModel):
 
 
 @router.post("/api/events", dependencies=[Depends(verify_api_key)])
-async def ingest_event(event: SpendEvent):
+@limiter.limit("200/minute")
+async def ingest_event(request: Request, event: SpendEvent):
     print(f"[keel] agent={event.agent} model={event.model} "
           f"input={event.input_tokens} output={event.output_tokens} "
           f"cost=${event.cost_usd:.6f}")

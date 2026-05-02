@@ -3,10 +3,11 @@ import secrets
 from datetime import datetime, timezone
 
 from bson import ObjectId
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from pydantic import BaseModel
 
 from app.database import get_db
+from app.limiter import limiter
 
 router = APIRouter()
 
@@ -24,7 +25,8 @@ class CreateKeyRequest(BaseModel):
 
 
 @router.post("/api/keys")
-async def create_key(body: CreateKeyRequest):
+@limiter.limit("10/minute")
+async def create_key(request: Request, body: CreateKeyRequest):
     if not body.name.strip():
         raise HTTPException(status_code=400, detail="Name is required")
     full_key, key_hash = _generate_key()
@@ -49,7 +51,8 @@ async def create_key(body: CreateKeyRequest):
 
 
 @router.get("/api/keys")
-async def list_keys(user_id: str):
+@limiter.limit("30/minute")
+async def list_keys(request: Request, user_id: str):
     db = get_db()
     cursor = db.api_keys.find(
         {"user_id": user_id, "is_active": True},
@@ -68,7 +71,8 @@ async def list_keys(user_id: str):
 
 
 @router.delete("/api/keys/{key_id}")
-async def revoke_key(key_id: str, user_id: str):
+@limiter.limit("20/minute")
+async def revoke_key(request: Request, key_id: str, user_id: str):
     db = get_db()
     try:
         oid = ObjectId(key_id)
