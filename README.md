@@ -1,10 +1,10 @@
-<h1 align="center"><img src="frontend/public/icon.png" width="60" />&nbsp;&nbsp;Dory</h1>
+<h1 align="center"><img src="frontend/public/logo.png" width="60" />&nbsp;&nbsp;Keel</h1>
 
-Dory tracks what your AI agents spend. Wrap your LLM client with one line of Python and every call, tokens, cost, and source location shows up in your dashboard in real time.
+Keel tracks what your AI agents spend. Wrap your LLM client with one line of Python and every call, tokens, cost, and source location shows up in your dashboard in real time.
 
 ## Why
 
-Agentic AI costs are invisible until they aren't. Dory makes them visible as they happen: per agent, per function, per line of code. You can see which task cost $0.43, which function is driving 80% of your bill, and whether an agent is approaching its budget before it does.
+Agentic AI costs are invisible until they aren't. Keel makes them visible as they happen: per agent, per function, per line of code. You can see which task cost $0.43, which function is driving 80% of your bill, and whether an agent is approaching its budget before it does.
 
 ## Features
 
@@ -23,12 +23,12 @@ Agentic AI costs are invisible until they aren't. Dory makes them visible as the
 - **Frontend:** Next.js + Tailwind, deployed on Vercel
 - **Backend:** FastAPI + MongoDB Atlas, deployed on Railway
 - **Auth:** Clerk
-- **SDK:** Python (`dory-sdk`)
+- **SDK:** Python (`keel-sdk`)
 - **MCP Server:** stdio, works with any MCP-compatible agent
 
 ## API
 
-All endpoints require `X-API-Key: <your-dory-key>`.
+All endpoints require `X-API-Key: <your-api-key>`.
 
 | Method | Path | Description |
 |--------|------|-------------|
