@@ -226,9 +226,13 @@ export default function Dashboard() {
         fetch(`${API_URL}/api/tasks`, { headers }),
       ]);
 
-      if (!sumRes.ok) throw new Error(`Summary: ${sumRes.status} ${sumRes.statusText}`);
-      if (!evtRes.ok) throw new Error(`Events: ${evtRes.status} ${evtRes.statusText}`);
-      if (!detRes.ok) throw new Error(`Details: ${detRes.status} ${detRes.statusText}`);
+      const firstBad = [sumRes, evtRes, detRes].find(r => !r.ok);
+      if (firstBad) {
+        if (firstBad.status === 401) throw new Error('Invalid API key. Please check your API key in Settings → API Keys.');
+        if (firstBad.status === 422) throw new Error('API key not configured. Add your API key to connect to the backend.');
+        if (firstBad.status === 500) throw new Error('Something went wrong on the server. Please try again later.');
+        throw new Error(`Unexpected error (${firstBad.status}). Please try again.`);
+      }
 
       const sumData: SpendSummary = await sumRes.json();
       const evtData: { events: SpendEvent[] } = await evtRes.json();
@@ -240,7 +244,11 @@ export default function Dashboard() {
       setDetails(detData.details);
       setTasks(tasksData.tasks);
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Failed to fetch data');
+      if (e instanceof TypeError && e.message.includes('fetch')) {
+        setError(`Cannot reach backend at ${API_URL}. Is it running?`);
+      } else {
+        setError(e instanceof Error ? e.message : 'Failed to fetch data');
+      }
     } finally {
       setLoading(false);
     }
@@ -360,9 +368,6 @@ export default function Dashboard() {
         {error && (
           <div className="mb-8 p-4 rounded-xl border border-red-500/30 bg-red-500/10 text-red-300 text-sm">
             <span className="font-semibold">Error:</span> {error}
-            <span className="text-red-400/70 ml-2 text-xs">
-              — Is the backend running at <code>{API_URL}</code>?
-            </span>
           </div>
         )}
 
